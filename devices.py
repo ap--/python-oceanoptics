@@ -12,12 +12,19 @@
 import usb.core
 import struct
 from defines import *
-from time import sleep
+import numpy as np
 #----------------------------------------------------------
 
 
 class USB2000(object):
-
+    """ class USB2000:
+        
+            Serial --> serial_number
+            acquire_spectrum() --> np.array
+            device_temperature() --> float celcius
+            integration_time(time_us=None) --> returns / sets the ~
+    """
+    
     def __init__(self):
         
         self._dev = usb.core.find(idVendor=0x2457, idProduct=0x101E)
@@ -38,43 +45,74 @@ class USB2000(object):
         self._EP2_in_size = 512
         self._EP6_in_size = 512
 
+        # This part makes the initialization a little bit more robust
         self._dev.set_configuration()
-        self.initialize()
+        self._initialize()
+        #<robust>#
         while True:
             try:
-                self._usbcomm = self.query_status()['usb_speed']
+                self._usbcomm = self._query_status()['usb_speed']
                 break
             except usb.core.USBError:
                 pass
-        self.serial = self._get_serial()
+        while True:
+            try:
+                self._request_spectrum()
+                break
+            except:
+                pass
+        #</robust>#
+
         self._wl = self._get_wavelength_calibration()
         self._nl = self._get_nonlinearity_calibration()
+        self._st = self._get_saturation_calibration()
+        self.Serial = self._get_serial()
 
-    def initialize(self):
+
+    def integration_time(self, time_us=None):
+        if not (time_us is None):
+            self._set_integration_time(time_us)
+        return self._query_status()['integration_time']
+
+    def device_temperature(self):
+        return self._read_pcb_temperature()
+
+    def acquire_spectrum(self):
+        raw_intensity = np.array(self._request_spectrum())[20:] * self._st
+        wavelength = sum( self._wl[i] * np.arange(20,2048)**i for i in range(4) )
+        intensity = sum( self._nl[i] * raw_intensity**i for i in range(8) )
+        return np.vstack([wavelength, intensity])
+
+
+    #-----------------------------
+    # The user doesn't need to see this
+    #-----------------------------
+    def _initialize(self):
         """ 0x01 initialize """
         self._dev.write(self._EP1_out, struct.pack('<B', 0x01))
 
-    def set_integration_time(self, time_us):
+    def _set_integration_time(self, time_us):
         """ 0x02 set integration time """
         self._dev.write(self._EP1_out, struct.pack('<BI', 0x02, int(time_us)))
 
-    def _query_information(self, address):
+    def _query_information(self, address, raw=False):
         """ 0x05 query info """
-        self._dev.write(self._EP1_out, struct.pack('<BB', 0x05, int(address)%0xF))
+        self._dev.write(self._EP1_out, struct.pack('<BB', 0x05, int(address)%0xFF))
         ret = self._dev.read(self._EP1_in, self._EP1_in_size)
+        if bool(raw): return ret
         if ret[0] != 0x05 or ret[1] != int(address)%0xFF:
             raise Exception('query_information: Wrong answer')
         return ret[2:ret[2:].index(0)+2].tostring()
 
-    def read_register_information(self, address):
+    def _read_register_information(self, address):
         """ 0x6B read register info """
-        self._dev.write(self._EP1_out, struct.pack('<BB', 0x6B, int(address)%0xF))
+        self._dev.write(self._EP1_out, struct.pack('<BB', 0x6B, int(address)%0xFF))
         ret = self._dev.read(self._EP1_in, self._EP1_in_size)
         if ret[0] != int(address)%0xFF:
             raise Exception('read_register_information: Wrong answer')
         return struct.unpack('<h', ret[1:])[0]
-    
-    def read_pcb_temperature(self):
+
+    def _read_pcb_temperature(self):
         """ 0x6C read pcb temperature """
         self._dev.write(self._EP1_out, struct.pack('<B', 0x6C))
         ret = self._dev.read(self._EP1_in, self._EP1_in_size)
@@ -83,7 +121,7 @@ class USB2000(object):
         adc, = struct.unpack('<h', ret[1:])
         return 0.003906*adc
 
-    def query_status(self):
+    def _query_status(self):
         """ 0xFE query status """
         self._dev.write(self._EP1_out, struct.pack('<B', 0xFE))
         ret = self._dev.read(self._EP1_in, self._EP1_in_size)
@@ -99,7 +137,7 @@ class USB2000(object):
                 'usb_speed'           : data[10] }
         return ret
 
-    def request_spectrum(self):
+    def _request_spectrum(self):
         """ 0x09 request spectra """
         self._dev.write(self._EP1_out, struct.pack('<B', 0x09))
         if self._usbcomm == USB_HIGHSPEED:
@@ -124,6 +162,10 @@ class USB2000(object):
             # Don't care about this right now
             raise OceanOpticsError('This spectrometer has less correction factors')
         return [float(self._query_information(i)) for i in range(6,14)]
+
+    def _get_saturation_calibration(self):
+        ret = self._query_information(0x11, raw=True)
+        return 65535.0/float(struct.unpack('<h',ret[6:8])[0])
 
 
 
