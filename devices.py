@@ -11,7 +11,7 @@
 #----------------------------------------------------------
 import usb.core
 import struct
-from defines import *
+from defines import OceanOpticsError as _OOError
 import numpy as np
 #----------------------------------------------------------
 
@@ -29,7 +29,7 @@ class USB2000(object):
         
         self._dev = usb.core.find(idVendor=0x2457, idProduct=0x101E)
         if self._dev is None:
-            raise OceanOpticsError('No OceanOptics USB2000+ spectrometer found!')
+            raise _OOError('No OceanOptics USB2000+ spectrometer found!')
         else:
             print ('*NOTE*: Currently the first device matching the '
                    'Vendor/Product id is used')
@@ -140,15 +140,15 @@ class USB2000(object):
     def _request_spectrum(self):
         """ 0x09 request spectra """
         self._dev.write(self._EP1_out, struct.pack('<B', 0x09))
-        if self._usbcomm == USB_HIGHSPEED:
+        if self._usbcomm == 0x80: #HIGHSPEED
             ret = [self._dev.read(self._EP2_in, 512) for _ in range(8)]
-        else: # _usbcomm == USB_FULLSPEED 
+        else: # _usbcomm == 0x00  #FULLSPEED
             ret = [self._dev.read(self._EP2_in, 64) for _ in range(64)]
         ret = sum(ret[1:], ret[0])
         spectrum = struct.unpack('<'+'h'*2048, ret)
         sync = self._dev.read(self._EP2_in, 1)
         if sync[0] != 0x69:
-            raise OceanOpticsError('request_spectrum: Wrong answer')
+            raise _OOError('request_spectrum: Wrong answer')
         return spectrum
 
     def _get_serial(self):
@@ -160,7 +160,7 @@ class USB2000(object):
     def _get_nonlinearity_calibration(self):
         if int(self._query_information(14)) != 7:
             # Don't care about this right now
-            raise OceanOpticsError('This spectrometer has less correction factors')
+            raise _OOError('This spectrometer has less correction factors')
         return [float(self._query_information(i)) for i in range(6,14)]
 
     def _get_saturation_calibration(self):

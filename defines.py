@@ -12,9 +12,6 @@
 class OceanOpticsError(Exception):
     pass
 
-USB_HIGHSPEED = 0x80
-USB_FULLSPEED = 0x00
-
 USB2000_TRIGGER_MODES = {
         'normal' : 0,
         'software' : 1,
