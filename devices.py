@@ -78,9 +78,9 @@ class USB2000(object):
         return self._read_pcb_temperature()
 
     def acquire_spectrum(self):
-        raw_intensity = np.array(self._request_spectrum())[20:] # self.st
+        raw_intensity = np.array(self._request_spectrum(), dtype=np.float)[20:] # self.st
         wavelength = sum( self._wl[i] * np.arange(20,2048)**i for i in range(4) )
-        intensity = sum( self._nl[i] * raw_intensity**i for i in range(8) )
+        intensity =  sum( self._nl[i] * raw_intensity**i for i in range(8) )
         return np.vstack([wavelength, intensity])
 
 
@@ -270,7 +270,12 @@ if __name__ == '__main__':
             GLib.timeout_add(self._interval, self.updateplot )
             Gtk.main()
 
-        
-    m = DynamicPlotter(sampleinterval=0.05)
+    import sys
+    if sys.argv[1:] == ['--raw']:
+        raw=True
+    else:
+        raw=False
+
+    m = DynamicPlotter(sampleinterval=0.05, raw=raw)
     m.run()
 
