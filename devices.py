@@ -78,9 +78,11 @@ class USB2000(object):
         return self._read_pcb_temperature()
 
     def acquire_spectrum(self):
-        raw_intensity = np.array(self._request_spectrum(), dtype=np.float)[20:] # self.st
+        raw_intensity = np.array(self._request_spectrum(), dtype=np.float)[20:]
         wavelength = sum( self._wl[i] * np.arange(20,2048)**i for i in range(4) )
-        intensity =  sum( self._nl[i] * raw_intensity**i for i in range(8) )
+        # fixed linearization, see documentation at:
+        # --> http://www.oceanoptics.com/technical/OOINLCorrect%20Linearity%20Coeff%20Proc.pdf
+        intensity =  raw_intensity / sum( self._nl[i] * raw_intensity**i for i in range(8) ) * self._st
         return np.vstack([wavelength, intensity])
 
 
