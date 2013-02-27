@@ -49,18 +49,19 @@ class USB2000(object):
         self._dev.set_configuration()
         self._initialize()
         #<robust>#
-        while True:
+        for i in range(10):
             try:
                 self._usbcomm = self._query_status()['usb_speed']
                 break
-            except usb.core.USBError:
-                pass
-        while True:
+            except usb.core.USBError: pass
+        else: raise _OOError('Initialization USBCOM')
+        self._set_integration_time(1000)
+        for i in range(10):
             try:
                 self._request_spectrum()
                 break
-            except:
-                pass
+            except: pass
+        else: raise _OOError('Initialization SPECTRUM')
         #</robust>#
 
         self._wl = self._get_wavelength_calibration()
