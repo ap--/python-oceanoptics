@@ -13,6 +13,7 @@ import usb.core
 import struct
 from defines import OceanOpticsError as _OOError
 import numpy as np
+import time
 #----------------------------------------------------------
 
 
@@ -142,7 +143,11 @@ class USB2000(object):
 
     def _request_spectrum(self):
         """ 0x09 request spectra """
+        # XXX: 100000 was an arbitary choice. Should probably be a little less than the USB timeout
+        # TODO: store integration time in class to avoid unnessecary overhead
+        wait = max(self._query_status()['integration_time'] - 100000, 0.0)*1e-6
         self._dev.write(self._EP1_out, struct.pack('<B', 0x09))
+        time.sleep(wait)
         if self._usbcomm == 0x80: #HIGHSPEED
             ret = [self._dev.read(self._EP2_in, 512) for _ in range(8)]
         else: # _usbcomm == 0x00  #FULLSPEED
