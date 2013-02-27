@@ -3,6 +3,6 @@
 
 Currently working with:
 
-    * USB2000+
+* USB2000+
 
 Contributions are welcome.
