@@ -56,7 +56,7 @@ class USB2000(object):
                 break
             except usb.core.USBError: pass
         else: raise _OOError('Initialization USBCOM')
-        self._set_integration_time(1000)
+        self.integration_time(1000) # sets self._it
         for i in range(10):
             try:
                 self._request_spectrum()
@@ -74,7 +74,8 @@ class USB2000(object):
     def integration_time(self, time_us=None):
         if not (time_us is None):
             self._set_integration_time(time_us)
-        return self._query_status()['integration_time']
+        self._it = self._query_status()['integration_time']
+        return self._it
 
     def device_temperature(self):
         return self._read_pcb_temperature()
@@ -144,10 +145,8 @@ class USB2000(object):
     def _request_spectrum(self):
         """ 0x09 request spectra """
         # XXX: 100000 was an arbitary choice. Should probably be a little less than the USB timeout
-        # TODO: store integration time in class to avoid unnessecary overhead
-        wait = max(self._query_status()['integration_time'] - 100000, 0.0)*1e-6
         self._dev.write(self._EP1_out, struct.pack('<B', 0x09))
-        time.sleep(wait)
+        time.sleep( max(self._it - 100000, 0) * 1e-6 )
         if self._usbcomm == 0x80: #HIGHSPEED
             ret = [self._dev.read(self._EP2_in, 512) for _ in range(8)]
         else: # _usbcomm == 0x00  #FULLSPEED
