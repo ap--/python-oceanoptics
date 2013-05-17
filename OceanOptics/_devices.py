@@ -1,6 +1,6 @@
 
 """ File:           devices.py
-    Author:         Andreas Poehlmann
+    Author:         Andreas Poehlmann, Jose A. Jimenez-Berni
     Last change:    2012/09/04
 
     Python Interface for OceanOptics Spectometers.
