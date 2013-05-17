@@ -1,17 +1,8 @@
 
-""" File:           devices.py
-    Author:         Andreas Poehlmann, Jose A. Jimenez-Berni
-    Last change:    2012/09/04
-
-    Python Interface for OceanOptics Spectometers.
-    Current device classes: 
-        * USB2000+
-"""
-
 #----------------------------------------------------------
 import usb.core
 import struct
-from _defines import OceanOpticsError as _OOError
+from .._defines import OceanOpticsError as _OOError
 import numpy as np
 import time
 #----------------------------------------------------------
