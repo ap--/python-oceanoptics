@@ -8,44 +8,79 @@ Created on Sat May 18 10:48:48 2013
 """
 
 import OceanOptics
-import time
+import sys, time
 import pandas
 from datetime import datetime
-
-integration_time = 1e6
-scan_averages = 5
-
-time_delay = 10
-spectra = 10
-
-wl = []
-temperatures = []
-intensities = {}
-
-sts = OceanOptics.STS()
-sp = sts.acquire_spectrum()
-wl = sp[0]
-
-sts.set_scan_averages(scan_averages)
-sts.integration_time(integration_time)
-
-for i in range(spectra):
-    store = pandas.HDFStore('spectral.h5')
-    intensities = {}
-    current_datetime = datetime.utcnow()
-    ts = current_datetime.strftime("D%y_%m_%dT%H_%M_%SZ")
-    sp = sts.acquire_spectrum()
-    print "Aquiring: %s" % ts
-    detector_temperature = sts.device_temperature()
-    temperatures.append(detector_temperature)
-    intensities[ts] = sp[1]
-    spectrum_df = pandas.DataFrame(intensities, index=wl)
-    store[ts] = spectrum_df
-    store.close()
-    time.sleep(time_delay)
+import atexit
 
 
+class spectral_logger(object):
 
+    def __init__(self,  interval_seconds=60):
+        self.hd5_store = None
+        self.spectrometer = None
+        self.acquiring = False
+        self.interval_seconds = interval_seconds
+        self.wl = None
+        self.hdf_filename = None
+        self.integration_time = 1e6
+        self.scan_averages = 5
+        self._init_spectrometer()
+        self.setup_spectrometer()
 
+    def _init_spectrometer(self):
+        try:
+            self.spectrometer = OceanOptics.STS()
+            sp = self.spectrometer.acquire_spectrum()
+            self.wl = sp[0]
+            serial = self.spectrometer.Serial
+            self.hdf_filename = serial+'.h5'
+        except:
+            print "Error opening spectrometer. Exiting..."
+            sys.exit(1)
 
+    def setup_spectrometer(self):
+        self.spectrometer.set_scan_averages(self.scan_averages)
+        self.spectrometer.integration_time(self.integration_time)
+
+    def measure_spectrum(self):
+        self.acquiring = True
+        store = pandas.HDFStore(self.hdf_filename)
+        intensities = {}
+        current_datetime = datetime.utcnow()
+        ts = current_datetime.strftime("%y-%m-%dT%H:%M:%SZ")
+        ts_index = current_datetime.strftime("D%y_%m_%dT%H_%M_%SZ")
+        sp = self.spectrometer.acquire_spectrum()
+        print "Aquiring: %s" % ts_index
+        detector_temperature = self.spectrometer.device_temperature()
+        intensities[ts_index] = sp[1]
+        spectrum_df = pandas.DataFrame(intensities, index=self.wl)
+        store[ts_index] = spectrum_df
+        index_item = {'spectrum_datestamp' : ts, 'spectrum_id' : ts_index, 'detector_temperature' : detector_temperature}
+        df_index = pandas.DataFrame(index_item, index = [0])
+        #import pdb; pdb.set_trace()
+        if 'spectrum_index' in store:
+            df_in_store = store['spectrum_index']
+            df_in_store = df_in_store.append(index_item, ignore_index=True)
+            store['spectrum_index'] = df_in_store
+        else:
+            store['spectrum_index'] = df_index
+        store.close()
+        self.acquiring = False
+
+def clean(logger=None):
+    print "clean me"
+    if (logger is not None):
+        for i in range(10):
+            if not logger.acquiring:
+                sys.exit(0)
+            else:
+                time.sleep(1)
+
+if __name__ == "__main__":
+    logger = spectral_logger()
+    atexit.register(clean, logger)
+    while(True):
+        logger.measure_spectrum()
+        time.sleep(logger.interval_seconds)
 
