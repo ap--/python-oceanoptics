@@ -89,9 +89,12 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--raw', action='store_true', help='Show raw detector values')
-    parser.add_argument('-i', '--interval', type=float, default=0.1, help='Update interval')
-    parser.add_argument('-s', '--smooth', type=int, default=None, help='Number of spectrum points to average over')
-    parser.add_argument('-O', '--oversample', type=int, default=1, help='Average together successive spectra')
+    parser.add_argument('-i', '--interval', type=float, default=0.1, metavar='SECONDS',
+                        help='Update interval')
+    parser.add_argument('-s', '--smooth', type=int, default=None, metavar='N',
+                        help='Number of spectrum points to average over')
+    parser.add_argument('-O', '--oversample', type=int, default=1, metavar='N',
+                        help='Average together successive spectra')
 
     args = parser.parse_args()
     m = DynamicPlotter(sample_interval=args.interval, raw=args.raw, smoothing=args.smooth,
