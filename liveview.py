@@ -59,7 +59,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--raw', action='store_true', help='Show raw detector values')
-    parser.add_argument('-i', '--interval', type=int, default=0.1, help='Update interval')
+    parser.add_argument('-i', '--interval', type=float, default=0.1, help='Update interval')
     args = parser.parse_args()
     m = DynamicPlotter(sampleinterval=args.interval, raw=args.raw)
     m.run()
