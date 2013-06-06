@@ -55,12 +55,11 @@ if __name__ == '__main__':
             GLib.timeout_add(self._interval, self.updateplot )
             Gtk.main()
 
-    import sys
-    if sys.argv[1:] == ['--raw']:
-        raw=True
-    else:
-        raw=False
-
-    m = DynamicPlotter(sampleinterval=0.05, raw=raw)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r', '--raw', action='store_true', help='Show raw detector values')
+    parser.add_argument('-i', '--interval', type=int, default=0.1, help='Update interval')
+    args = parser.parse_args()
+    m = DynamicPlotter(sampleinterval=args.interval, raw=args.raw)
     m.run()
 
