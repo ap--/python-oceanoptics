@@ -7,7 +7,6 @@
 """
 
 import OceanOptics
-import threading
 import time
 import numpy as np
 
@@ -16,6 +15,7 @@ from gi.repository import Gtk, GLib
 class mpl:
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
+
 
 class DynamicPlotter(Gtk.Window):
 
@@ -97,7 +97,8 @@ if __name__ == '__main__':
                         help='Average together successive spectra')
 
     args = parser.parse_args()
-    m = DynamicPlotter(sample_interval=args.interval, raw=args.raw, smoothing=args.smooth,
+
+m = DynamicPlotter(sample_interval=args.interval, raw=args.raw, smoothing=args.smooth,
                        oversampling=args.oversample)
     m.run()
 
