@@ -19,19 +19,19 @@ class mpl:
 
 class DynamicPlotter(Gtk.Window):
 
-    def __init__(self, sample_interval=0.1, size=(600,350), raw=False, smoothing=None, oversampling=1):
+    def __init__(self, sample_interval=0.1, smoothing=1, oversampling=1, raw=False, size=(600,350)):
         # Gtk stuff
         Gtk.Window.__init__(self, title='OceanOptics USB2000+ Spectrum')
         self.connect("destroy", lambda x : Gtk.main_quit())
         self.set_default_size(*size)
         # Data stuff
-        self._interval = int(sampleinterval*1000)
-        self.spec = OceanOptics.USB2000()
-        self.smoothing = smoothing
-        self.wl, self.sp = self.spec.acquire_spectrum()
-        self.sample_n = 0
-        self.sp = np.zeros((len(self.sp), oversampling))
+        self.sample_interval = int(sample_interval*1000)
+        self.smoothing = int(smoothing)
+        self._sample_n = 0
         self.raw = bool(raw)
+        self.spectrometer = OceanOptics.USB2000()
+        self.wl, self.sp = self.spectrometer.acquire_spectrum()
+        self.sp = np.zeros((len(self.sp), int(oversampling)))
         # MPL stuff
         self.figure = mpl.Figure()
         self.ax = self.figure.add_subplot(1, 1, 1)
@@ -53,20 +53,19 @@ class DynamicPlotter(Gtk.Window):
 
         # get spectrum
         if self.raw:
-            sp = np.array(self.spec._request_spectrum())[20:]
+            sp = np.array(self.spectrometer._request_spectrum())[20:]
         else:
-            _, sp = self.spec.acquire_spectrum()
-
+            _, sp = self.spectrometer.acquire_spectrum()
         
-        self.sp[:,self.sample_n] = sp
-        self.sample_n += 1
-        self.sample_n %= self.sp.shape[1]
-        if self.sample_n == 0: # do not draw or average
+        self.sp[:,self._sample_n] = sp
+        self._sample_n += 1
+        self._sample_n %= self.sp.shape[1]
+        if self._sample_n == 0: # do not draw or average
             return
         # average!
         sp = np.mean(self.sp, axis=1)
         
-        if self.smoothing:
+        if self.smoothing > 1:
             n = self.smoothing
             kernel = np.ones((n,)) / n
             sp = np.convolve(sp, kernel)[(n-1):]
@@ -79,7 +78,7 @@ class DynamicPlotter(Gtk.Window):
 
     
     def run(self):
-        GLib.timeout_add(self._interval, self.update_plot)
+        GLib.timeout_add(self.sample_interval, self.update_plot)
         Gtk.main()
 
 
@@ -91,14 +90,14 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--raw', action='store_true', help='Show raw detector values')
     parser.add_argument('-i', '--interval', type=float, default=0.1, metavar='SECONDS',
                         help='Update interval')
-    parser.add_argument('-s', '--smooth', type=int, default=None, metavar='N',
+    parser.add_argument('-s', '--smooth', type=int, default=1, metavar='N',
                         help='Number of spectrum points to average over')
     parser.add_argument('-O', '--oversample', type=int, default=1, metavar='N',
                         help='Average together successive spectra')
 
     args = parser.parse_args()
 
-m = DynamicPlotter(sample_interval=args.interval, raw=args.raw, smoothing=args.smooth,
+    m = DynamicPlotter(sample_interval=args.interval, raw=args.raw, smoothing=args.smooth,
                        oversampling=args.oversample)
     m.run()
 
