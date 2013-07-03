@@ -92,14 +92,26 @@ OceanOpticsModelConfig = {
         }
 
 
-USB2000_TRIGGER_MODES = {
-        'normal' : 0,
-        'software' : 1,
-        'external_HW_lvl' : 2,
-        'external_sync' : 3,
-        'external_HW_edge' : 4 
-        }
-
-
-
-
+OceanOpticsSpectrumConfig = {
+    'QE65pro'       : { 0x80 : [  5, 512, lambda x : x^0x80 ],
+                        0x00 : [ 40,  64, lambda x : x^0x80 ] },
+    'QE65000'       : { 0x80 : [  5, 512, lambda x : x^0x80 ],
+                        0x00 : [ 40,  64, lambda x : x^0x80 ] },
+    'USB2000+'      : { 0x80 : [  8, 512, lambda x : x      ],
+                        0x00 : [ 64,  64, lambda x : x      ] },
+    'Torus'         : { 0x80 : [  8, 512, lambda x : x      ],
+                        0x00 : [ 64,  64, lambda x : x      ] },
+    'HR2000+'       : { 0x80 : [  8, 512, lambda x : x^0x20 ],
+                        0x00 : [ 64,  64, lambda x : x^0x20 ] },
+    'Apex'          : { 0x80 : [  9, 512, lambda x : x      ],
+                        0x00 : [ 66,  64, lambda x : x      ] },
+    'Maya'          : { 0x80 : [  9, 512, lambda x : x      ],
+                        0x00 : [ 66,  64, lambda x : x      ] },
+    'Maya2000pro'   : { 0x80 : [  9, 512, lambda x : x      ],
+                        0x00 : [ 66,  64, lambda x : x      ] },
+    'USB4000'       : { 0x80 : [ 15, 512, lambda x : x      ],
+                        0x00 : [120,  64, lambda x : x      ] },
+    'HR4000'        : { 0x80 : [ 15, 512, lambda x : x      ],
+                        0x00 : [120,  64, lambda x : x      ] },
+    }
+                    
