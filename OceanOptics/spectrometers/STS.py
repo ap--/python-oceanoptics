@@ -11,7 +11,7 @@
 #----------------------------------------------------------
 import usb.core
 import struct
-from _defines import OceanOpticsError as _OOError
+from .._defines import OceanOpticsError as _OOError
 import numpy as np
 import time
 #----------------------------------------------------------
