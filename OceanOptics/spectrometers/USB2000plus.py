@@ -3,13 +3,14 @@
 import usb.core
 import struct
 from .._defines import OceanOpticsError as _OOError
+from .._base import OceanOpticsBase as _OOBase
 import numpy as np
 import time
 #----------------------------------------------------------
 
 
-class USB2000(object):
-    """ class USB2000:
+class USB2000plus(object):
+    """ class USB2000plus:
         
             Serial --> serial_number
             acquire_spectrum() --> np.array
