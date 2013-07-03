@@ -9,7 +9,16 @@ import time
 #----------------------------------------------------------
 
 
-class USB2000plus(object):
+class USB2000plus(_OOBase):
+
+    def __init__(self):
+        super(USB2000plus, self).__init__('USB2000+')
+
+
+
+
+
+class _OLD_USB2000plus(object):
     """ class USB2000plus:
         
             Serial --> serial_number
