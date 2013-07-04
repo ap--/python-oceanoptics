@@ -34,7 +34,7 @@ class OceanOpticsUSBComm(object):
         
         try:
             self._dev = devices.pop(0)
-        except AttributeError:
+        except (AttributeError, IndexError):
             raise _OOError('No OceanOptics %s spectrometer found!' % model)
         else:
             if devices: 
