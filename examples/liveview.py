@@ -60,7 +60,7 @@ class DynamicPlotter(Gtk.Window):
         self.sp[:,self._sample_n] = sp
         self._sample_n += 1
         self._sample_n %= self.sp.shape[1]
-        if self._sample_n == 0: # do not draw or average
+        if self._sample_n != 0: # do not draw or average
             return
         # average!
         sp = np.mean(self.sp, axis=1)
