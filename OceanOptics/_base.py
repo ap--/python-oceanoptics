@@ -92,6 +92,7 @@ class OceanOpticsBase(OceanOpticsUSBComm):
         self._wl = sum( self._wl_factors[i] *
               np.arange(self._pixels)**i for i in range(4) )
 
+
     #---------------------
     # High level functions
     #---------------------
@@ -113,8 +114,9 @@ class OceanOpticsBase(OceanOpticsUSBComm):
         self._integration_time = self._query_status()['integration_time']*1e-6
         return self._integration_time
 
+
     #---------------------
-    # Low level functions.
+    # helper functions.
     #---------------------
 
     def _init_robust_status(self):
@@ -134,6 +136,11 @@ class OceanOpticsBase(OceanOpticsUSBComm):
                 break
             except: raise
         else: raise _OOError('Initialization SPECTRUM')
+
+
+    #---------------------
+    # Low level functions.
+    #---------------------
 
     def _initialize(self):
         """ send command 0x01 """
@@ -181,43 +188,5 @@ class OceanOpticsBase(OceanOpticsUSBComm):
                 'packets_in_endpoint' : data[7],
                 'usb_speed' : data[10] }
         return ret
-
-
-
-
-class OceanOpticsSerialNum(OceanOpticsUSBComm):
-
-    def _write_serial_number(self,):
-        raise NotImplementedError
-
-    def _get_serial_number(self,):
-        raise NotImplementedError
-
-
-
-class OceanOpticsShutdown(OceanOpticsUSBComm):
-
-    def _set_shutdown_mode(self):
-        raise NotImplementedError
-
-
-class OceanOpticsTrigger(OceanOpticsUSBComm):
-
-    def _set_trigger_mode(self):
-        raise NotImplementedError
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
