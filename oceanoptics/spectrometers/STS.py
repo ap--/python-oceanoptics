@@ -16,11 +16,12 @@
 import usb.core
 import struct
 from .._defines import OceanOpticsError as _OOError
+from .._base import OceanOpticsSpectrometer as _OOSpec
 import numpy as np
 import time
 #----------------------------------------------------------
 
-class STS(object):
+class STS(_OOSpec):
     """ class STS:
 
             Serial --> serial_number
@@ -117,6 +118,25 @@ class STS(object):
                 break
             except: pass
         else: raise _OOError('Initialization SPECTRUM')
+
+    ##################################################
+    # XXX HACKED: XXX
+    # > STS inherits from OceanOpticsSpectrometer
+    ##################################################
+    
+    def integration_time(self, time=None):
+        self.set_integration_time(time)
+        return self.get_integration_time()
+   
+    def wavelengths(self, *args):
+        return sum( self._wl[i] * np.arange(1024)**i for i in range(4) )
+
+    def spectrum(self, *args):
+        return self.acquire_spectrum()[1]
+
+    ##################################################
+    # /XXX HACKED: /XXX
+    ##################################################
 
     def set_integration_time(self, time_us):
         if not (time_us is None):

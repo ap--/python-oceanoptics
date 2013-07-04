@@ -13,3 +13,5 @@ from spectrometers.TORUS import TORUS
 from spectrometers.STS import STS
 
 from _defines import OceanOpticsError
+
+from _utils import get_a_random_spectrometer

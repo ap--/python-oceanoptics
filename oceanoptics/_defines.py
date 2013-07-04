@@ -114,4 +114,9 @@ OceanOpticsSpectrumConfig = {
     'HR4000'        : { 0x80 : [ 15, 512, lambda x : x      ],
                         0x00 : [120,  64, lambda x : x      ] },
     }
-                    
+
+
+OceanOpticsSupportedModels = OceanOpticsSpectrumConfig.keys() + ['STS']
+
+
+
