@@ -11,6 +11,27 @@ from _defines import OceanOpticsVendorId as _OOVendorId
 from _defines import OceanOpticsSpectrumConfig as _OOSpecConfig
 #----------------------------------------------------------
 
+
+class OceanOpticsSpectrometer(object):
+    """
+    This class will define the common high-level interface.
+    All spectrometers should inherit from this!
+    (or from a class that inherits from this)
+    """
+    def wavelengths(self):
+        """ returns a np.array with wavelenghts in nm """
+        raise NotImplementedError
+
+    def spectrum(self, raw=False):
+        """ returns a np.array with all intensities """
+        raise NotImplementedError
+
+    def integration_time(self, time=None):
+        """ returns / sets the current integration_time """
+        raise NotImplementedError
+
+
+
 class OceanOpticsUSBComm(object):
 
     def __init__(self, model):
@@ -64,8 +85,7 @@ class OceanOpticsUSBComm(object):
         return self._usb_read(epi, epi_size)
 
 
-
-class OceanOpticsBase(OceanOpticsUSBComm):
+class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
     """ This class implements functionality that is common
     among all supported spectrometers.
 
