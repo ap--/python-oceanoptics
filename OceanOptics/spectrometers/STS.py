@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+#
+# TODO: inherit from OceanOpticsSpectrometer and implement
+#       high level functions!s
+#
 """ File:           STS.py
     Author:        Jose A. Jimenez-Berni
     Last change:    2013/05/20
