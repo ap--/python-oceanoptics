@@ -1,12 +1,12 @@
-# tested 
+# XXX: untested
 #----------------------------------------------------------
 from .._base import OceanOpticsBase as _OOBase
 #----------------------------------------------------------
 
 
-class USB2000plus(_OOBase):
+class QE65pro(_OOBase):
 
     def __init__(self):
-        super(USB2000plus, self).__init__('USB2000+')
+        super(QE65pro, self).__init__('QE65pro')
 
 
