@@ -1,17 +1,28 @@
 
 # TESTING BRANCH
 
-Might not actully work in the current state!
+Might not actually work in the current state!
 
-## OceanOptics python module
+## Ocean Optics python module
 
 Currently working with:
 
 * USB2000+
 * STS
 
-Contributions are welcome.
+Those should work, but are untested:
 
+* USB4000
+* HR2000+
+* HR4000
+* apex
+* maya
+* maya2000pro
+* QE65pro
+* QE65000 
+* Torus
+
+Contributions are welcome.
 
 #### Possible Additions
 
