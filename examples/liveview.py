@@ -6,7 +6,7 @@
     Liveview example
 """
 
-import OceanOptics
+import oceanoptics
 import time
 import numpy as np
 
@@ -21,7 +21,7 @@ class DynamicPlotter(Gtk.Window):
 
     def __init__(self, sample_interval=0.1, smoothing=1, oversampling=1, raw=False, size=(600,350)):
         # Gtk stuff
-        Gtk.Window.__init__(self, title='OceanOptics USB2000+ Spectrum')
+        Gtk.Window.__init__(self, title='Ocean Optics Spectrometer')
         self.connect("destroy", lambda x : Gtk.main_quit())
         self.set_default_size(*size)
         # Data stuff
@@ -29,8 +29,9 @@ class DynamicPlotter(Gtk.Window):
         self.smoothing = int(smoothing)
         self._sample_n = 0
         self.raw = bool(raw)
-        self.spectrometer = OceanOptics.USB2000()
-        self.wl, self.sp = self.spectrometer.acquire_spectrum()
+        self.spectrometer = oceanoptics.get_a_random_spectrometer()
+        self.wl = self.spectrometer.wavelengths()
+        self.sp = self.spectrometer.intensities()
         self.sp = np.zeros((len(self.sp), int(oversampling)))
         # MPL stuff
         self.figure = mpl.Figure()
@@ -42,7 +43,7 @@ class DynamicPlotter(Gtk.Window):
         self.add(self.canvas)
         self.canvas.show()
         self.show_all()
-
+    
     def update_plot(self):
         # -> redraw on new spectrum
         # -> average over self.sample_n spectra
@@ -52,10 +53,7 @@ class DynamicPlotter(Gtk.Window):
         # > smoothing can be done after averaging
 
         # get spectrum
-        if self.raw:
-            sp = np.array(self.spectrometer._request_spectrum())[20:]
-        else:
-            _, sp = self.spectrometer.acquire_spectrum()
+        sp = np.array(self.spectrometer.intensities(raw=self.raw))
         
         self.sp[:,self._sample_n] = sp
         self._sample_n += 1
