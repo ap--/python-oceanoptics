@@ -18,18 +18,25 @@ class OceanOpticsSpectrometer(object):
     All spectrometers should inherit from this!
     (or from a class that inherits from this)
     """
-    def wavelengths(self):
+    def wavelengths(self, only_valid_pixels=True):
         """ returns a np.array with wavelenghts in nm """
         raise NotImplementedError
 
-    def spectrum(self, raw=False):
+    def intensities(self, raw=False, only_valid_pixels=True,
+            correct_nonlinearity=True, correct_darkcounts=True,
+            correct_saturation=True ):
         """ returns a np.array with all intensities """
+        raise NotImplementedError
+
+    def spectrum(self, raw=False, only_valid_pixels=True,
+            correct_nonlinearity=True, correct_darkcounts=True,
+            correct_saturation=True ):
+        """ returns a 2d np.array with all wavelengths and intensities """
         raise NotImplementedError
 
     def integration_time(self, time=None):
         """ returns / sets the current integration_time """
         raise NotImplementedError
-
 
 
 class OceanOpticsUSBComm(object):
@@ -117,16 +124,28 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
     # High level functions
     #---------------------
 
-    def wavelengths(self):
+    def wavelengths(self, only_valid_pixels=True):
         return self._wl
 
-    def spectrum(self, raw=False):
+    def intensities(self, raw=False, only_valid_pixels=True,
+            correct_nonlinearity=True, correct_darkcounts=True,
+            correct_saturation=True ):
         data = np.array(self._request_spectrum(), dtype=np.float)
         if not raw:
             data = data / sum( self._nl_factors[i] * data**i for i in range(8) )
             # XXX: differs for some spectrometers
             #data *= self._sat_factor
         return data
+
+    def spectrum(self, raw=False, only_valid_pixels=True,
+            correct_nonlinearity=True, correct_darkcounts=True,
+            correct_saturation=True):
+        return np.vstack((self.wavelengths(only_valid_pixels=only_valid_pixels), 
+                          self.intensities(raw=raw,
+                                only_valid_pixels=only_valid_pixels,
+                                correct_nonlinearity=correct_nonlinearity,
+                                correct_darkcounts=correct_darkcounts,
+                                correct_saturation=correct_saturation)))
 
     def integration_time(self, time_us=None):
         if not (time_us is None):
