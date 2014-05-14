@@ -1,4 +1,3 @@
-
 import usb.core
 from .defines import OceanOpticsSupportedModels as _OOSupMod
 from .defines import OceanOpticsModelConfig as _OOModConf
@@ -8,15 +7,14 @@ from .base import OceanOpticsBase as _OOBase
 
 
 def get_a_random_spectrometer():
-    
     ProductId = {}
     for model in _OOSupMod:
         pid = _OOModConf[model]['ProductId']
         ProductId.update(zip(pid, [model] * len(pid)))
 
     devices = usb.core.find(find_all=True,
-                    custom_match=lambda d: (d.idVendor==_OOVendorId and
-                                            d.idProduct in ProductId.keys()))
+                            custom_match=lambda d: (d.idVendor == _OOVendorId and
+                                                    d.idProduct in ProductId.keys()))
     if devices:
         print '> found:'
     else:
@@ -30,7 +28,11 @@ def get_a_random_spectrometer():
 
     if mod == 'STS':
         from spectrometers.STS import STS
-        return STS()
-    return _OOBase(mod)
 
+        return STS()
+    elif mod == 'QE65000':
+        from spectrometers.QE65000 import QE65000
+
+        return QE65000()
+    return _OOBase(mod)
 
