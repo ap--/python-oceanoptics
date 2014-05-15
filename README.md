@@ -9,6 +9,7 @@ Currently working with:
 
 * USB2000+
 * STS
+* QE65000
 
 Those should work, but are untested:
 
@@ -19,7 +20,6 @@ Those should work, but are untested:
 * maya
 * maya2000pro
 * QE65pro
-* QE65000 
 * Torus
 
 Contributions are welcome.
