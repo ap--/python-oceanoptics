@@ -1,10 +1,10 @@
 
 import usb.core
-from _defines import OceanOpticsSupportedModels as _OOSupMod
-from _defines import OceanOpticsModelConfig as _OOModConf
-from _defines import OceanOpticsVendorId as _OOVendorId
-from _defines import OceanOpticsError as _OOError
-from _base import OceanOpticsBase
+from .defines import OceanOpticsSupportedModels as _OOSupMod
+from .defines import OceanOpticsModelConfig as _OOModConf
+from .defines import OceanOpticsVendorId as _OOVendorId
+from .defines import OceanOpticsError as _OOError
+from .base import OceanOpticsBase as _OOBase
 
 
 def get_a_random_spectrometer():
@@ -12,7 +12,7 @@ def get_a_random_spectrometer():
     ProductId = {}
     for model in _OOSupMod:
         pid = _OOModConf[model]['ProductId']
-        ProductId.update(zip(pid,[model]*len(pid)))
+        ProductId.update(zip(pid, [model] * len(pid)))
 
     devices = usb.core.find(find_all=True,
                     custom_match=lambda d: (d.idVendor==_OOVendorId and
@@ -31,6 +31,6 @@ def get_a_random_spectrometer():
     if mod == 'STS':
         from spectrometers.STS import STS
         return STS()
-    return OceanOpticsBase(mod)
+    return _OOBase(mod)
 
 

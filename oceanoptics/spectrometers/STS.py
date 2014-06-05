@@ -15,8 +15,8 @@
 #----------------------------------------------------------
 import usb.core
 import struct
-from .._defines import OceanOpticsError as _OOError
-from .._base import OceanOpticsSpectrometer as _OOSpec
+from ..defines import OceanOpticsError as _OOError
+from ..base import OceanOpticsSpectrometer as _OOSpec
 import numpy as np
 import time
 #----------------------------------------------------------

@@ -5,10 +5,10 @@ import struct
 import time
 import usb.core
 import warnings
-from _defines import OceanOpticsError as _OOError
-from _defines import OceanOpticsModelConfig as _OOModelConfig
-from _defines import OceanOpticsVendorId as _OOVendorId
-from _defines import OceanOpticsSpectrumConfig as _OOSpecConfig
+from .defines import OceanOpticsError as _OOError
+from .defines import OceanOpticsModelConfig as _OOModelConfig
+from .defines import OceanOpticsVendorId as _OOVendorId
+from .defines import OceanOpticsSpectrumConfig as _OOSpecConfig
 #----------------------------------------------------------
 
 
