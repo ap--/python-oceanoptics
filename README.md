@@ -1,9 +1,12 @@
+## Ocean Optics python module ##
 
-# TESTING BRANCH
+This python module provides access to some basic functionality of some [Ocean
+Optics](http://www.oceanoptics.com/) spectrometers. This software is not
+associated with Ocean Optics. Use it at your own risk.
 
-Might not actually work in the current state!
+It is currently working with:
 
-## Ocean Optics python module
+## Ocean Optics python module ##
 
 Currently working with:
 
@@ -24,7 +27,41 @@ Those should work, but are untested:
 
 Contributions are welcome.
 
-#### Possible Additions
+
+## Installing ##
+
+To install the python module download this repository and run:
+
+```
+python setup.py install
+```
+
+You should also install the udev rules:
+
+```
+sudo cp misc/10-oceanoptics.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+```
+
+make sure that your user is in the _plugdev_ group.
+
+
+## Quickstart ##
+
+After installing run some of the example programs to test if everything is
+working.
+
+
+## Contributing ##
+
+If you own any of the spectrometers listed below, feel free to contribute.
+
+
+
+
+
+
+#### Possible Additions ####
 
 * USB2000
 * USB-LS450
@@ -36,10 +73,9 @@ Contributions are welcome.
 * maya
 * maya2000pro
 * QE65pro
-* QE65000 
 * Torus
 
-#### Not currently planned
+#### Not currently planned ####
 
 * HR2000
 * Jaz
