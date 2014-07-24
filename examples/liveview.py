@@ -30,6 +30,7 @@ class DynamicPlotter(Gtk.Window):
         self._sample_n = 0
         self.raw = bool(raw)
         self.spectrometer = oceanoptics.get_a_random_spectrometer()
+        self.spectrometer.integration_time(time_us=(sample_interval * 0.8 * 1000000))
         self.wl = self.spectrometer.wavelengths()
         self.sp = self.spectrometer.intensities()
         self.sp = np.zeros((len(self.sp), int(oversampling)))
