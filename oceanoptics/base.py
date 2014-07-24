@@ -45,7 +45,7 @@ class OceanOpticsUSBComm(object):
         self._usb_init_connection(model)
 
     def _usb_init_connection(self, model):
-       
+
         if model not in _OOModelConfig.keys():
             raise _OOError('Unkown OceanOptics spectrometer model: %s' % model)
 
@@ -56,19 +56,21 @@ class OceanOpticsUSBComm(object):
         self._EPin0_size = _OOModelConfig[model]['EPin0_size']
         self._EPin1_size = _OOModelConfig[model]['EPin1_size']
 
-        devices = usb.core.find(find_all=True, 
+        devices = usb.core.find(find_all=True,
                         custom_match=lambda d: (d.idVendor==vendorId and
                                                 d.idProduct in productId))
-        
+        # FIXME: generator fix
+        devices = list(devices)
+
         try:
             self._dev = devices.pop(0)
         except (AttributeError, IndexError):
             raise _OOError('No OceanOptics %s spectrometer found!' % model)
         else:
-            if devices: 
+            if devices:
                 warnings.warn('Currently the first device matching the '
                               'Vendor/Product id is used')
-        
+
         self._dev.set_configuration()
         self._USBTIMEOUT = self._dev.default_timeout * 1e-3
 
@@ -125,6 +127,18 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
     #---------------------
 
     def wavelengths(self, only_valid_pixels=True):
+        """returns array of wavelengths
+
+        Parameters
+        ----------
+        only_valid_pixels : bool, optional
+            XXX: Not implemented yet, does nothing.
+
+        Returns
+        -------
+        wavelengths : ndarray
+            wavelengths of spectrometer
+        """
         return self._wl
 
     def intensities(self, raw=False, only_valid_pixels=True,
