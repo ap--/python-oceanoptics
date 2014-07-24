@@ -15,6 +15,9 @@ def get_a_random_spectrometer():
     devices = usb.core.find(find_all=True,
                             custom_match=lambda d: (d.idVendor == _OOVendorId and
                                                     d.idProduct in ProductId.keys()))
+    # TODO: ??? usb.core.find can also return a generator ???
+    devices = list(devices)
+
     if devices:
         print '> found:'
     else:
