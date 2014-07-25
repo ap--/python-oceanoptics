@@ -119,7 +119,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
         self._wl_factors = [float(self._query_information(i)) for i in range(1,5)]
         self._nl_factors = [float(self._query_information(i)) for i in range(6,14)]
         self._wl = sum( self._wl_factors[i] *
-              np.arange(self._pixels)**i for i in range(4) )
+              np.arange(self._pixels, dtype=np.float64)**i for i in range(4) )
 
 
     #---------------------
