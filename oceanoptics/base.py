@@ -223,7 +223,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
         sync = self._usb_read(epi=self._EPspec, epi_size=1)
         if sync[0] != 0x69:
             raise _OOError('request_spectrum: Wrong sync byte')
-        spectrum = struct.unpack('<'+'h'*self._pixels, ret)
+        spectrum = struct.unpack('<'+'H'*self._pixels, ret)
         spectrum = map(self._packet_func, spectrum)
         return spectrum
 
