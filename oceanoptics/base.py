@@ -9,6 +9,7 @@ from .defines import OceanOpticsError as _OOError
 from .defines import OceanOpticsModelConfig as _OOModelConfig
 from .defines import OceanOpticsVendorId as _OOVendorId
 from .defines import OceanOpticsSpectrumConfig as _OOSpecConfig
+from .defines import OceanOpticsValidPixels as _OOValidPixels
 #----------------------------------------------------------
 
 
@@ -120,7 +121,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
         self._nl_factors = [float(self._query_information(i)) for i in range(6,14)]
         self._wl = sum( self._wl_factors[i] *
               np.arange(self._pixels, dtype=np.float64)**i for i in range(4) )
-
+        self._valid_pixels = _OOValidPixels[model]
 
     #---------------------
     # High level functions
@@ -139,12 +140,18 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
         wavelengths : ndarray
             wavelengths of spectrometer
         """
-        return self._wl
+        if only_valid_pixels:
+            return self._wl[self._valid_pixels]
+        else:
+            return self._wl
 
     def intensities(self, raw=False, only_valid_pixels=True,
             correct_nonlinearity=True, correct_darkcounts=True,
             correct_saturation=True ):
-        data = np.array(self._request_spectrum(), dtype=np.float)
+        if only_valid_pixels:
+            data = np.array(self._request_spectrum(), dtype=np.float)
+        else:
+            data = np.array(self._request_spectrum()[self._valid_pixels], dtype.float)
         if not raw:
             data = data / sum( self._nl_factors[i] * data**i for i in range(8) )
             # XXX: differs for some spectrometers
