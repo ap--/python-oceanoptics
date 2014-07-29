@@ -204,8 +204,11 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
                                 correct_darkcounts=correct_darkcounts,
                                 correct_saturation=correct_saturation)))
 
-    def integration_time(self, time_us=None):
-        if not (time_us is None):
+    def integration_time(self, time=None):
+        """get or set integration_time in seconds
+        """
+        if not (time is None):
+            time_us = time * 1000000
             self._set_integration_time(time_us)
         self._integration_time = self._query_status()['integration_time']*1e-6
         return self._integration_time
