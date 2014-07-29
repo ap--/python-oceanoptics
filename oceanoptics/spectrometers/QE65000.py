@@ -2,9 +2,8 @@
 #----------------------------------------------------------
 from __future__ import print_function
 import struct
-import usb.core
-from ..defines import OceanOpticsError as _OOError
-from ..base import OceanOpticsBase as _OOBase
+from oceanoptics.defines import OceanOpticsError as _OOError
+from oceanoptics.base import OceanOpticsBase as _OOBase
 import numpy as np
 import time
 #----------------------------------------------------------
@@ -15,7 +14,6 @@ class QE65000(_OOBase):
     def __init__(self):
         super(QE65000, self).__init__('QE65000')
         print('TEC temperature: ' + str(self._set_TEC_temperature(-18)))
-
 
     def _request_spectrum(self):
         self._usb_send(struct.pack('<B', 0x09))
@@ -50,7 +48,6 @@ class QE65000(_OOBase):
             return sum(self._wl_factors[i] * np.arange(1024) ** i for i in range(4))
         else:
             return sum(self._wl_factors[i] * np.arange(self._pixels) ** i for i in range(4))
-
 
     def _read_temperatures(self):
         """ 0x6C read pcb temperature """
