@@ -154,7 +154,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
     def spectrum(self, raw=False, only_valid_pixels=True,
             correct_nonlinearity=True, correct_darkcounts=True,
             correct_saturation=True):
-        return np.vstack((self.wavelengths(only_valid_pixels=only_valid_pixels), 
+        return np.vstack((self.wavelengths(only_valid_pixels=only_valid_pixels),
                           self.intensities(raw=raw,
                                 only_valid_pixels=only_valid_pixels,
                                 correct_nonlinearity=correct_nonlinearity,
@@ -180,7 +180,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
             except usb.core.USBError: pass
         else: raise _OOError('Initialization USBCOM')
         return status
-        
+
     def _init_robust_spectrum(self):
         self.integration_time(1000)
         for i in range(10):
@@ -198,7 +198,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
     def _initialize(self):
         """ send command 0x01 """
         self._usb_send(struct.pack('<B', 0x01))
-        
+
     def _set_integration_time(self, time_us):
         """ send command 0x02 """
         self._usb_send(struct.pack('<BI', 0x02, int(time_us)))
@@ -217,7 +217,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
     def _request_spectrum(self):
         self._usb_send(struct.pack('<B', 0x09))
         time.sleep(max(self._integration_time - self._USBTIMEOUT, 0))
-        ret = [ self._usb_read(epi=self._EPspec, epi_size=self._packet_size) 
+        ret = [ self._usb_read(epi=self._EPspec, epi_size=self._packet_size)
                             for _ in range(self._packet_N) ]
         ret = sum( ret[1:], ret[0] )
         sync = self._usb_read(epi=self._EPspec, epi_size=1)
