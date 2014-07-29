@@ -133,7 +133,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
         Parameters
         ----------
         only_valid_pixels : bool, optional
-            XXX: Not implemented yet, does nothing.
+            only optical active pixels are returned.
 
         Returns
         -------
@@ -148,6 +148,26 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
     def intensities(self, raw=False, only_valid_pixels=True,
             correct_nonlinearity=True, correct_darkcounts=True,
             correct_saturation=True ):
+        """returns array of intensities
+
+        Parameters
+        ----------
+        raw : bool, optional
+            does nothing yet.
+        only_valid_pixels : bool, optional
+            only optical active pixels are returned.
+        correct_nonlinearity : bool, optional
+            does nothing yet.
+        correct_darkcounts : bool, optional
+            does nothing yet.
+        correct_saturation : bool, optional
+            does nothing yet.
+
+        Returns
+        -------
+        intensities : ndarray
+            intensities of spectrometer.
+        """
         if only_valid_pixels:
             data = np.array(self._request_spectrum()[self._valid_pixels], dtype=np.float64)
         else:
@@ -161,6 +181,26 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
     def spectrum(self, raw=False, only_valid_pixels=True,
             correct_nonlinearity=True, correct_darkcounts=True,
             correct_saturation=True):
+        """returns array of wavelength and intensities
+
+        Parameters
+        ----------
+        raw : bool, optional
+            does nothing yet.
+        only_valid_pixels : bool, optional
+            only optical active pixels are returned.
+        correct_nonlinearity : bool, optional
+            does nothing yet.
+        correct_darkcounts : bool, optional
+            does nothing yet.
+        correct_saturation : bool, optional
+            does nothing yet.
+
+        Returns
+        -------
+        spectrum : ndarray
+            wavelengths and intensities of spectrometer.
+        """
         return np.vstack((self.wavelengths(only_valid_pixels=only_valid_pixels),
                           self.intensities(raw=raw,
                                 only_valid_pixels=only_valid_pixels,
