@@ -116,7 +116,19 @@ OceanOpticsSpectrumConfig = {
     }
 
 
+OceanOpticsValidPixels = {
+    'Apex'          : slice(10, 2058),
+    'HR2000+'       : slice(20, 2048),
+    'HR4000'        : slice(22, 3670),
+    'Maya'          : slice(16, 2064),
+    'Maya2000pro'   : slice(10, 2058),
+    'QE65000'       : slice(10, 1034),
+    'QE65pro'       : slice(0, 1024),
+    'Torus'         : slice(20, 2048),
+    'USB2000+'      : slice(20:2048),
+    'USB4000'       : slice(22:3670),
+    }
+
+
 OceanOpticsSupportedModels = OceanOpticsSpectrumConfig.keys() + ['STS']
-
-
 
