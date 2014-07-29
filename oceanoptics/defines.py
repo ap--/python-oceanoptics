@@ -125,8 +125,8 @@ OceanOpticsValidPixels = {
     'QE65000'       : slice(10, 1034),
     'QE65pro'       : slice(0, 1024),
     'Torus'         : slice(20, 2048),
-    'USB2000+'      : slice(20:2048),
-    'USB4000'       : slice(22:3670),
+    'USB2000+'      : slice(20, 2048),
+    'USB4000'       : slice(22, 3670),
     }
 
 
