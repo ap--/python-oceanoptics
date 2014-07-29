@@ -7,8 +7,8 @@ associated with Ocean Optics. Use it at your own risk.
 **Currently working with:**
 
 * USB2000+
-* STS
 * QE65000
+* STS (This needs some work to be completely added to the new framework)
 
 Those should work, but are untested:
 
