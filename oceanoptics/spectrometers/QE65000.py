@@ -15,20 +15,6 @@ class QE65000(_OOBase):
         super(QE65000, self).__init__('QE65000')
         print('TEC temperature: ' + str(self._set_TEC_temperature(-18)))
 
-    def _request_spectrum(self):
-        self._usb_send(struct.pack('<B', 0x09))
-        time.sleep(max(self._integration_time - self._USBTIMEOUT, 0))
-        ret = [self._usb_read(epi=self._EPspec, epi_size=self._packet_size)
-               for _ in range(self._packet_N)]
-        sync = self._usb_read(epi=self._EPspec, epi_size=1)
-        ret = ret[0] + ret[1] + ret[2] + ret[3] + ret[4]
-        if sync[0] != 0x69:
-            raise _OOError('request_spectrum: Wrong sync byte')
-        spectrum = struct.unpack('<' + 'H' * self._pixels, ret)
-        spectrum = map(self._packet_func, spectrum)
-        spectrum = np.array(spectrum, dtype=np.uint16)
-        return spectrum
-
     def intensities(self, raw=False, only_valid_pixels=True,
                     correct_nonlinearity=True, correct_darkcounts=True,
                     correct_saturation=True):
