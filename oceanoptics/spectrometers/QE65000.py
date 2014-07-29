@@ -27,7 +27,6 @@ class QE65000(_OOBase):
         spectrum = struct.unpack('<' + 'H' * self._pixels, ret)
         spectrum = map(self._packet_func, spectrum)
         spectrum = np.array(spectrum, dtype=np.uint16)
-        spectrum ^= 0b1000000000000000
         return spectrum
 
     def intensities(self, raw=False, only_valid_pixels=True,
