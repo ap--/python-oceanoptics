@@ -2,9 +2,7 @@
 #----------------------------------------------------------
 from __future__ import print_function
 import struct
-from oceanoptics.defines import OceanOpticsError as _OOError
 from oceanoptics.base import OceanOpticsBase as _OOBase
-import numpy as np
 import time
 #----------------------------------------------------------
 
@@ -15,24 +13,6 @@ class QE65000(_OOBase):
         super(QE65000, self).__init__('QE65000')
         print('TEC temperature: ' + str(self._set_TEC_temperature(-18)))
 
-    def intensities(self, raw=False, only_valid_pixels=True,
-                    correct_nonlinearity=True, correct_darkcounts=True,
-                    correct_saturation=True):
-        if only_valid_pixels:
-            data = np.array(self._request_spectrum(), dtype=np.float)[10:1034]
-        else:
-            data = np.array(self._request_spectrum(), dtype=np.float)
-        if not raw:
-            data = data / sum(self._nl_factors[i] * data ** i for i in range(8))
-            # XXX: differs for some spectrometers
-            #data *= self._sat_factor
-        return data
-
-    def wavelengths(self, only_valid_pixels=True):
-        if only_valid_pixels:
-            return sum(self._wl_factors[i] * np.arange(1024) ** i for i in range(4))
-        else:
-            return sum(self._wl_factors[i] * np.arange(self._pixels) ** i for i in range(4))
 
     def _read_temperatures(self):
         """ 0x6C read pcb temperature """
