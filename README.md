@@ -4,11 +4,7 @@ This python module provides access to some basic functionality of some [Ocean
 Optics](http://www.oceanoptics.com/) spectrometers. This software is not
 associated with Ocean Optics. Use it at your own risk.
 
-It is currently working with:
-
-## Ocean Optics python module ##
-
-Currently working with:
+**Currently working with:**
 
 * USB2000+
 * STS
@@ -27,8 +23,21 @@ Those should work, but are untested:
 
 Contributions are welcome.
 
-
 ## Installing ##
+
+### Requirements ###
+
+I'm using python 2.7.x, so this is not tested on Python 3.x.
+
+The core libraries require:
+- pyusb-1.0.0b1 (this is available on pypi. Newer versions break parts of the API...)
+- numpy
+
+For the example you'll need:
+- gtk3 python bindings
+- matplotlib
+
+### Linux ###
 
 To install the python module download this repository and run:
 
@@ -45,11 +54,22 @@ sudo udevadm control --reload-rules
 
 make sure that your user is in the _plugdev_ group.
 
+### Windows and OSX ###
+
+If anyone wants to volunteer to write instructions how to use this library on Windows and Mac, feel free to contact me.
+
 
 ## Quickstart ##
 
-After installing run some of the example programs to test if everything is
-working.
+After installing test if it's working by:
+
+```
+import oceanoptics
+spec = oceanoptics.get_a_random_spectrometer()
+print spec.spectrum()
+```
+
+or run some the example program _liveview.py_
 
 
 ## Contributing ##
@@ -57,11 +77,9 @@ working.
 If you own any of the spectrometers listed below, feel free to contribute.
 
 
-
-
-
-
 #### Possible Additions ####
+
+These might actually already work.
 
 * USB2000
 * USB-LS450
@@ -75,7 +93,7 @@ If you own any of the spectrometers listed below, feel free to contribute.
 * QE65pro
 * Torus
 
-#### Not currently planned ####
+#### Not supported ####
 
 * HR2000
 * Jaz
