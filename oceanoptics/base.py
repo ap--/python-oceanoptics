@@ -172,10 +172,6 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
             data = np.array(self._request_spectrum()[self._valid_pixels], dtype=np.float64)
         else:
             data = np.array(self._request_spectrum(), dtype=np.float64)
-        if not raw:
-            data = data / sum( self._nl_factors[i] * data**i for i in range(8) )
-            # XXX: differs for some spectrometers
-            #data *= self._sat_factor
         return data
 
     def spectrum(self, raw=False, only_valid_pixels=True,
