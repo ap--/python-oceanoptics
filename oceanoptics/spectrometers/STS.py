@@ -173,7 +173,7 @@ class STS(_OOSpec, _OOUSBComm):
         super(STS, self).__init__('STS')
 
         # This empties the USB buffer
-        self._initialize()
+        # self._initialize()
 
         # we can't query this info:
         self._pixels = 1024
