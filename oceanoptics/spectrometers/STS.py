@@ -275,8 +275,9 @@ class STS(_OOSpec, _OOUSBComm):
         while True:
             if remaining_bytes <= 0:
                 break
-            ret += self._usb_read()
-            remaining_bytes -= self._EPin0_size  # packet size is 64 here...
+            N_bytes = min(remaining_bytes, self._EPin0_size)
+            ret += self._usb_read(epi_size=N_bytes)
+            remaining_bytes -= N_bytes
 
         if length_payload_footer != len(ret[44:]):
             raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
