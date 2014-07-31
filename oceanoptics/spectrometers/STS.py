@@ -248,13 +248,13 @@ class STS(_OOSpec, _OOUSBComm):
         """
         # Get the numer of wavelength coefficients first
         data = self._query_data(self.MSG_GET_WAVELENGTH_COEFFICIENT_COUNT, "")
-        N_wlcoeff = struct.unpack("<B", data)
+        N_wlcoeff = struct.unpack("<B", data)[0]
 
         # Then query the coefficients
         wlcoefficients = []
         for i in range(N_wlcoeff):
             data = self._query_data(self.MSG_GET_WAVELENGTH_COEFFICIENT, struct.pack("<B", i))
-            wlcoefficients.append(struct.unpack("<f", data))
+            wlcoefficients.append(struct.unpack("<f", data)[0])
 
         # Now, generate the wavelength array
         return sum( wlcoefficients[i] * np.arange(self._pixels, dtype=np.float64)**i for i in range(N_wlcoeff) )
