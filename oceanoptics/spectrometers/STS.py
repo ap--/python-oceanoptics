@@ -212,7 +212,7 @@ class STS(_OOSpec, _OOUSBComm):
         if remaining_bytes != len(ret[44:]):
             raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
 
-        self._check_incoming_message_footer(ret[-14:])
+        self._check_incoming_message_footer(ret[-20:])
         data = self._extract_message_data(ret)
         return data
 
@@ -221,7 +221,7 @@ class STS(_OOSpec, _OOUSBComm):
         msg = self._construct_outgoing_message(msgtype, payload, request_ACK=True)
         ret = self._usb_query(msg)
         self._check_incoming_message_header(ret[:44])
-        self._check_incoming_message_footer(ret[-14:])
+        self._check_incoming_message_footer(ret[-20:])
         return
 
 
@@ -273,7 +273,7 @@ class STS(_OOSpec, _OOUSBComm):
         if length_payload_footer != len(ret[44:]):
             raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
 
-        self._check_incoming_message_footer(ret[-14:])
+        self._check_incoming_message_footer(ret[-20:])
         data = self._extract_message_data(ret)
 
         spectrum = struct.unpack("<%dH" % self._pixels, data)
