@@ -173,7 +173,7 @@ class STS(_OOSpec, _OOUSBComm):
         super(STS, self).__init__('STS')
 
         # This empties the USB buffer
-        # self._initialize()
+        self._initialize()
 
         # we can't query this info:
         self._pixels = 1024
@@ -271,6 +271,8 @@ class STS(_OOSpec, _OOUSBComm):
 
         remaining_bytes, checksumtype = self._check_incoming_message_header(ret[:44])
         length_payload_footer = remaining_bytes
+
+        remaining_bytes -= len(ret[44:])
 
         while True:
             if remaining_bytes <= 0:
