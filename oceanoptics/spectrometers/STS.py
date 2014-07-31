@@ -380,7 +380,7 @@ class STS(_OOSpec, _OOUSBComm):
         """
         assert len(footer) == 20, "footer has wrong length! len(footer): %d" % len(footer)
 
-        data = struct.unpack(self.FOOTER_FMT, footer)
+        data = struct.unpack("<" + self.FOOTER_FMT, footer)
 
         checksum = data[0]
         assert data[1] == self.FOOTER, "the device returned a wrong footer: %d" % data[1]
