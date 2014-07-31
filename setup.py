@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='oceanoptics',
-    version='0.2.5',
+    version='0.2.6',
     author='Andreas Poehlmann, Jose A. Jimenez-Berni, Ben Gamari, Simon Dickreuter',
     author_email='mail@andreaspoehlmann.de',
     packages=['oceanoptics', 'oceanoptics.spectrometers'],

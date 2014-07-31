@@ -8,7 +8,7 @@ associated with Ocean Optics. Use it at your own risk.
 
 * USB2000+
 * QE65000
-* STS (This needs some work to be completely added to the new framework)
+* STS (Note: The rewritten class supports protocol version _0x1100_)
 
 Those should work, but are untested:
 
