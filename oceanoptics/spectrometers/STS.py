@@ -331,7 +331,7 @@ class STS(_OOSpec, _OOUSBComm):
         data = struct.unpack(self.HEADER_FMT, header)
 
         assert data[0] == self.HEADER_START_BYTES, 'header start_bytes wrong: %d' % data[0]
-        assert data[1] == self.HEADER_START_BYTES, 'header protocol version wrong: %d' % data[1]
+        assert data[1] == self.HEADER_PROTOCOL_VERSION, 'header protocol version wrong: %d' % data[1]
 
         flags = data[2]
         if flags == 0:
