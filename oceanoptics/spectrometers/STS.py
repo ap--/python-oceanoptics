@@ -202,7 +202,7 @@ class STS(_OOSpec, _OOUSBComm):
 
     def spectrum(self, *args, **kwargs):
         # TODO: add function paramters
-        return np.vstack(self._wl, self._request_spectrum())
+        return np.vstack((self._wl, self._request_spectrum()))
 
 
     def _query_data(self, msgtype, payload):
