@@ -19,12 +19,14 @@ from oceanoptics.base import OceanOpticsSpectrometer as _OOSpec
 from oceanoptics.base import OceanOpticsUSBComm as _OOUSBComm
 import numpy as np
 import time
+import md5
+import warnings
 #----------------------------------------------------------
 
 
 class STS(_OOSpec, _OOUSBComm):
     """Rewrite of STS class"""
-    
+
     HEADER_START_BYTES = 0xC0C1
     HEADER_PROTOCOL_VERSION = 0x1100  # XXX: this seems to be the newest protocol version!!!
 
@@ -208,11 +210,14 @@ class STS(_OOSpec, _OOUSBComm):
         msg = self._construct_outgoing_message(msgtype, payload, request_ACK=False)
         ret = self._usb_query(msg)
 
-        remaining_bytes = self._check_incoming_message_header(ret[:44])
+        remaining_bytes, checksumtype = self._check_incoming_message_header(ret[:44])
         if remaining_bytes != len(ret[44:]):
             raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
 
-        self._check_incoming_message_footer(ret[-20:])
+        checksum = self._check_incoming_message_footer(ret[-20:])
+        if (checksumtype == self.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
+            # TODO: raise Error
+            warnings.warn("The checksums differ, but we ignore this for now.")
         data = self._extract_message_data(ret)
         return data
 
@@ -220,8 +225,11 @@ class STS(_OOSpec, _OOUSBComm):
         """recommended command function"""
         msg = self._construct_outgoing_message(msgtype, payload, request_ACK=True)
         ret = self._usb_query(msg)
-        self._check_incoming_message_header(ret[:44])
-        self._check_incoming_message_footer(ret[-20:])
+        _, checksumtype = self._check_incoming_message_header(ret[:44])
+        checksum = self._check_incoming_message_footer(ret[-20:])
+        if (checksumtype == self.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
+            # TODO: raise Error
+            warnings.warn("The checksums differ, but we ignore this for now.")
         return
 
 
@@ -261,7 +269,7 @@ class STS(_OOSpec, _OOUSBComm):
         time.sleep(max(self._integration_time - self._USBTIMEOUT, 0))
         ret = self._usb_read()
 
-        remaining_bytes = self._check_incoming_message_header(ret[:44])
+        remaining_bytes, checksumtype = self._check_incoming_message_header(ret[:44])
         length_payload_footer = remaining_bytes
 
         while True:
@@ -273,7 +281,10 @@ class STS(_OOSpec, _OOUSBComm):
         if length_payload_footer != len(ret[44:]):
             raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
 
-        self._check_incoming_message_footer(ret[-20:])
+        checksum = self._check_incoming_message_footer(ret[-20:])
+        if (checksumtype == self.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
+            # TODO: raise Error
+            warnings.warn("The checksums differ, but we ignore this for now.")
         data = self._extract_message_data(ret)
 
         spectrum = struct.unpack("<%dH" % self._pixels, data)
@@ -355,13 +366,13 @@ class STS(_OOSpec, _OOUSBComm):
         # regarding = data[5]
 
         checksumtype = data[7]  # TODO: implement checksums.
-        assert checksumtype == self.NO_CHECKSUM, 'the device wants a md5 checksum...'
+        assert checksumtype in [self.CHECKSUM_TYPE_NONE, self.CHECKSUM_TYPE_MD5], 'the checksum type is unkown: %d' % checksumtype
 
         # immediate_length = data[8]
         # immediate_data = data[9]
         bytes_remaining = data[10]
 
-        return bytes_remaining
+        return bytes_remaining, checksumtype
 
     def _check_incoming_message_footer(self, footer):
         """message layout, see STS datasheet
@@ -371,12 +382,10 @@ class STS(_OOSpec, _OOUSBComm):
 
         data = struct.unpack(self.FOOTER_FMT, footer)
 
-        # TODO: implement checksums
-        assert data[0] == "", "the device sent a md5 checksum..."
-
+        checksum = data[0]
         assert data[1] == self.FOOTER, "the device returned a wrong footer: %d" % data[1]
 
-        return
+        return checksum
 
     def _extract_message_data(self, msg):
         """message layout, see STS datasheet
