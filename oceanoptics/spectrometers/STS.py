@@ -13,453 +13,403 @@
 """
 
 #----------------------------------------------------------
-import usb.core
 import struct
-from ..defines import OceanOpticsError as _OOError
-from ..base import OceanOpticsSpectrometer as _OOSpec
+from oceanoptics.defines import OceanOpticsError as _OOError
+from oceanoptics.base import OceanOpticsSpectrometer as _OOSpec
+from oceanoptics.base import OceanOpticsUSBComm as _OOUSBComm
 import numpy as np
 import time
 #----------------------------------------------------------
 
-class STS(_OOSpec):
-    """ class STS:
 
-            Serial --> serial_number
-            acquire_spectrum() --> np.array
-            get_device_temperature() --> float Celcius
-            set_integration_time(time_us=None) --> sets the ~
-            get_integration_time() --> returns  the ~ in us
-            set_scan_averages(scan_averages=None) --> sets the ~
-            get_scan_averages() --> returns  the ~
-            get_irradiance_calibraiton() --> returns float[1024] coef for radiometriometric calibration
-    """
+class STS(_OOSpec, _OOUSBComm):
+    """Rewrite of STS class"""
+    
+    HEADER_START_BYTES = 0xC0C1
+    HEADER_PROTOCOL_VERSION = 0x1100  # XXX: this seems to be the newest protocol version!!!
 
-    def __init__(self):
+    FLAG_RESPONSE_TO_REQUEST = 0x0001
+    FLAG_ACK = 0x0002
+    FLAG_REQUEST_ACK = 0x0004
+    FLAG_NACK = 0x0008
+    FLAG_HW_EXCEPTION = 0x0010
+    FLAG_PROTOCOL_DEPRECATED = 0x0020
 
-        self._dev = usb.core.find(idVendor=0x2457, idProduct=0x4000)
-        if self._dev is None:
-            raise _OOError('No OceanOptics STS spectrometer found!')
-        else:
-            print ('*NOTE*: Currently the first device matching the '
-                   'Vendor/Product id is used')
+    ERROR_CODES = {  0: 'Success (no detectable errors)',
+                     1: 'Invalid/unsupported protocol',
+                     2: 'Unknown message type',
+                     3: 'Bad checksum',
+                     4: 'Message too large',
+                     5: 'Payload length does not match message type',
+                     6: 'Payload data invalid',
+                     7: 'Device not ready for given message type',
+                     8: 'Unknown checksum type',
+                     9: 'Device reset unexpectedly',
+                    10: 'Too many buses (Commands have come from too many bus interfaces)',
+                    11: 'Out of memory. Failed to allocate enough space to complete request.',
+                    12: 'Command is valid, but desired information does not exist.',
+                    13: 'Int Device Error. May be unrecoverable.',
+                   100: 'Could not decrypt properly',
+                   101: 'Firmware layout invalid',
+                   102: 'Data packet was wrong size',
+                   103: 'hardware revision not compatible with firmware',
+                   104: 'Existing flash map not compatible with firmware',
+                   255: 'Operation/Response Deferred. Operation will take some time to complete. Do not ACK or NACK yet.',
+                  }
 
-        # This information comes from the OEM-Datasheet
-        # "http://www.oceanoptics.com/technical"
-        #       "/engineering/OEM%20Data%20Sheet%20--%20USB2000+.pdf"
-        self._EP1_out = 0x01
-        self._EP1_in = 0x81
-        self._EP2_in = 0x82
-        self._EP2_out = 0x02
-        self._EP3_interrupt = 0x83
-        self._EP1_in_size = 64
-        self._EP2_in_size = 64
-        self._EP1_out_size = 64
-        self._EP2_out_size = 64
+    NO_ERROR = 0x0000
+
+    RESERVED = ""
+
+    CHECKSUM_TYPE_NONE = 0x00
+    CHECKSUM_TYPE_MD5 = 0x01
+
+    NO_CHECKSUM = ""
+
+    FOOTER = 0xC5C4C3C2
+
+    # Generic Device Commands
+    MSG_RESET = 0x00000000
+    MSG_RESET_DEFAULTS = 0x00000001
+    MSG_GET_HARDWARE_REVISION = 0x00000080
+    MSG_GET_FIRMWARE_REVISION = 0x00000090
+    MSG_GET_SERIAL_NUMBER = 0x00000100
+    MSG_GET_DEVICE_ALIAS = 0x00000200
+    MSG_GET_DEVICE_ALIAS_LENGTH = 0x00000201
+    MSG_SET_DEVICE_ALIAS = 0x00000210
+    MSG_GET_NUMBER_USER_STRINGS = 0x00000300
+    MSG_GET_USER_STRING_LENGTH = 0x00000301
+    MSG_GET_USER_STRING = 0x00000302
+    MSG_SET_USER_STRING = 0x00000310
+    MSG_GET_RS232_BAUDRATE = 0x00000800
+    MSG_GET_RS232_FLOW_CONTROL_MODE = 0x00000804
+    MSG_SET_RS232_BAUDRATE = 0x00000810
+    MSG_SET_RS232_FLOW_CONTROL_MODE = 0x00000814
+    MSG_SAVE_RS232_SETTINGS = 0x000008F0
+    MSG_CONFIGURE_STATUS_LED = 0x00001010
+    MSG_REPROGRAMMING_MODE = 0x000FFF00
+
+    # Spectrometer Commands
+    MSG_GET_AND_SEND_CORRECTED_SPECTRUM = 0x00101000
+    MSG_GET_AND_SEND_RAW_SPECTRUM = 0x00101100
+    MSG_GET_PARTIAL_SPECTRUM_MODE = 0x00102000
+    MSG_GET_AND_SEND_PARTIAL_CORRECTED_SPECTRUM = 0x00102080
+    MSG_SET_INTEGRATION_TIME = 0x00110010
+    MSG_SET_TRIGGER_MODE = 0x00110110
+    MSG_SIMULATE_TRIGGER_PULSE = 0x00110120
+    MSG_GET_PIXEL_BINNING_FACTOR = 0x00110280
+    MSG_GET_MAXIMUM_BINNING_FACTOR = 0x00110281
+    MSG_SET_BINNING_FACTOR = 0x00110290
+    MSG_SET_DEFAULT_BINNING_FACTOR = 0x00110295
+    MSG_SET_LAMP_ENABLE = 0x00110410
+    MSG_SET_TRIGGER_DELAY = 0x00110510
+    MSG_GET_SCANS_TO_AVERAGE = 0x00120000
+    MSG_SET_SCANS_TO_AVERAGE = 0x00120010
+    MSG_GET_BOXCAR_WIDTH = 0x00121000
+    MSG_SET_BOXCAR_WIDTH = 0x00121010
+    MSG_GET_WAVELENGTH_COEFFICIENT_COUNT = 0x00180100
+    MSG_GET_WAVELENGTH_COEFFICIENT = 0x00180101
+    MSG_SET_WAVELENGTH_COEFFICIENT = 0x00180111
+    MSG_GET_NONLINEARITY_COEFFICIENT_COUNT = 0x00181100
+    MSG_GET_NONLINEARITY_COEFFICIENT = 0x00181101
+    MSG_SET_NONLINEARITY_COEFFICIENT = 0x00181111
+    MSG_GET_IRRADIANCE_CALIBRATION = 0x00182001
+    MSG_GET_IRRADIANCE_CALIBRATION_COUNT = 0x00182002
+    MSG_GET_IRRADIANCE_CALIBRATION_COLLECTION_AREA = 0x00182003
+    MSG_SET_IRRADIANCE_CALIBRATION = 0x00182011
+    MSG_SET_IRRADIANCE_CALIBRATION_COLLECTION_AREA = 0x00182013
+    MSG_GET_NUMBER_STRAY_LIGHT_COEFFICIENTS = 0x00183100
+    MSG_GET_STRAY_LIGHT_COEFFICIENT = 0x00183101
+    MSG_SET_STRAY_LIGHT_COEFFICIENT = 0x00183111
+    MSG_GET_HOT_PIXEL_INDICES = 0x00186000
+    MSG_SET_HOT_PIXEL_INDICES = 0x00186010
+    MSG_GET_BENCH_ID = 0x001B0000
+    MSG_GET_BENCH_SERIAL_NUMBER = 0x001B0100
+    MSG_GET_SLIT_WIDTH_MICRONS = 0x001B0200
+    MSG_GET_FIBER_DIAMETER_MICRONS = 0x001B0300
+    MSG_GET_FILTER = 0x001B0500
+    MSG_GET_COATING = 0x001B0600
+
+    # GPIO commands
+    MSG_GET_NUMBER_GPIO_PINS = 0x00200000
+    MSG_GET_OUTPUT_ENABLE_VECTOR = 0x00200100
+    MSG_SET_OUTPUT_ENABLE_VECTOR = 0x00200110
+    MSG_GET_VALUE_VECTOR = 0x00200300
+    MSG_SET_VALUE_VECTOR = 0x00200310
+
+    # Strobe commands
+    MSG_SET_SINGLE_STROBE_PULSE_DELAY = 0x00300010
+    MSG_SET_SINGLE_STROBE_PULSE_WIDTH = 0x00300011
+    MSG_SET_SINGLE_STROBE_ENABLE = 0x00300012
+    MSG_SET_CONTINUOUS_STROBE_PERIOD = 0x00310010
+    MSG_SET_CONTINUOUS_STROBE_ENABLE = 0x00310011
+
+    # Temperature Commands
+    MSG_GET_TEMPERATURE_SENSOR_COUNT = 0x00400000
+    MSG_READ_TEMPERATURE_SENSOR = 0x00400001
+    MSG_READ_ALL_TEMPERATURE_SENSORS = 0x00400002
+
+    HEADER_FMT = ("<H"    # start_bytes
+                   "H"    # protocol_version
+                   "H"    # flags
+                   "H"    # error number
+                   "L"    # message type
+                   "L"    # regarding
+                   "6s"   # reserved
+                   "B"    # checksum type
+                   "B"    # immediate length
+                   "16s"  # immediate data
+                   "L"    # bytes remaining
+                 )
+
+    FOOTER_FMT = ("16s"  # checksum
+                  "L"    # footer
+                 )
 
 
-        self._START_BYTES = 0xC0C1
-        self._END_BYTES = 0xC2C3C4C5
-        self._PROTOCOL_VERSION = 0x0100
-
-        self._MSG_GET_SERIAL = 0x00000100
-        self._MSG_GET_SERIAL_LENGHT = 0x00000101
-
-        self._MSG_GET_CORRECTED_SPECTRUM = 0x00101000
-        self._MSG_SET_INTEGRATION_TIME = 0x00110010
-
-        self._MSG_GET_HW_VERSION=0x00000080
-        self._MSG_GET_SW_VERSION=0x00000090
-
-        self._MSG_GET_AVG_SCANS=0x00110510
-        self._MSG_SET_AVG_SCANS=0x00120010
-
-        self._MSG_GET_TEMPERATURE=0x00400001
-        self._MSG_GET_ALL_TEMPERATURE=0x00400002
-
-        self._MSG_GET_WAVELENGTH_COEFF_COUNT = 0x00180100
-        self._MSG_GET_WAVELENGTH_COEFF = 0x00180101
-
-        self._MSG_GET_NONLINEAR_COEFF_COUNT = 0x00181100
-        self._MSG_GET_NONLINEAR_COEFF = 0x00181101
-
-        self._MSG_GET_STRAYLIGHT_COEFF_COUNT = 0x00183100
-        self._MSG_GET_STRAYLIGHT_COEFF = 0x00183101
-
-
-        self._MSG_GET_IRRADIANCE_COEFF = 0x00182001
-
-
-        self._scan_averages = 0
-
-
-        # This part makes the initialization a little bit more robust
-        self._dev.set_configuration()
-
+    def __init__(self, integration_time=0.001):
+        super(STS, self).__init__('STS')
 
         # This empties the USB buffer
-        self._initialize()
+        # self._initialize()
 
-        print "HW Version: %i" % self._get_hw_version()
-        print "SW Version: %i" % self._get_sw_version()
-        self.Serial = self._get_serial()
-        print "Serial: %s" % self.Serial
-        self.set_integration_time(10000) # sets self._it
-        self.set_scan_averages(10)
-        self._request_spectrum()
-        self._wl = self._get_wavelength_calibration()
-        self._nl = self._get_nonlinearity_calibration()
-        self._sl = self._get_stray_light_calibration()
+        # we can't query this info:
+        self._pixels = 1024
 
+        # get wavelengths
+        self._wl = self._get_wavelengths()
 
-        # Make sure everything is working
-        for i in range(10):
-            try:
-                self._request_spectrum()
-                break
-            except: pass
-        else: raise _OOError('Initialization SPECTRUM')
+        # set the integration time
+        self._integration_time = self._set_integration_time(integration_time)
 
-    ##################################################
-    # XXX HACKED: XXX
-    # > STS inherits from OceanOpticsSpectrometer
-    ##################################################
-    
     def integration_time(self, time=None):
-        self.set_integration_time(time)
-        return self.get_integration_time()
-   
-    def wavelengths(self, *args):
-        return sum( self._wl[i] * np.arange(1024)**i for i in range(4) )
-
-    def spectrum(self, *args):
-        return self.acquire_spectrum()[1]
-
-    ##################################################
-    # /XXX HACKED: /XXX
-    ##################################################
-
-    def set_integration_time(self, time_us):
-        if not (time_us is None):
-            self._set_integration_time(time_us)
-
-    def get_integration_time(self):
-        return self._it
-
-    def set_scan_averages(self, scan_averages):
-        if not (scan_averages is None):
-            self._set_scan_averages(scan_averages)
-
-    def get_scan_averages(self):
-        return self._scan_averages
-
-    def get_device_temperature(self):
-        """Returns the temperature of the detector"""
-        temperatures = self._read_temperatures()
-        return temperatures[0]
-
-    def get_irradiance_calibration(self):
-        return self._read_irradiance_calibration()
-
-    def acquire_spectrum(self):
-        raw_intensity = np.array(self._request_spectrum(), dtype=np.float)
-        nl_coeffs = len(self._nl)
-        wavelength = sum( self._wl[i] * np.arange(1024)**i for i in range(4) )
-        # fixed linearization, see documentation at:
-        # --> http://www.oceanoptics.com/technical/OOINLCorrect%20Linearity%20Coeff%20Proc.pdf
-        intensity =  raw_intensity / sum( self._nl[i] * raw_intensity**i for i in range(nl_coeffs) )
-        return np.vstack([wavelength, intensity])
-
-
-    def acquire_radiance_spectrum(self):
-        raise NotImplementedError
-
-
-    #-----------------------------
-    # The user doesn't need to see this
-    #-----------------------------
-    def _initialize(self):
-        """ Empty USB buffer """
-        print "Initilizing"
-        while(True):
-            try:
-                self._dev.read(self._EP1_in, self._EP1_in_size)
-            except:
-                break
-        #self._dev.write(self._EP1_out, struct.pack('<B', 0x01))
-
-
-    def _get_serial(self):
-
-        serial_leght = int(self._query_coefficient_count(self._MSG_GET_SERIAL_LENGHT))
-        print "Serial length: %i" % serial_leght
-
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBB16sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_GET_SERIAL,0x00000000,0x00000000,0x0000,0x00,0x00,'',\
-        0x14,'',self._END_BYTES))
-        ret = self._dev.read(self._EP1_in, self._EP1_in_size)
-        if len(ret) == 64:
-            ack = struct.unpack('<HHHHLL6sBB16sL16sL', ret)
-            if ack[3] == 0:
-                return str(ack[9]).replace('\0','')
-            else:
-                print "Error code: %i" % ack[3]
-                return -1
-        else:
-            print "Unexpected msg lenght: %i vs 64" % len(ret)
-            return -1
-
-
-        return "Not Yet!"
-
-    def _get_hw_version(self):
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBB16sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_GET_HW_VERSION,0x00000000,0x00000000,0x0000,0x00,0x00,'',\
-        0x14,'',self._END_BYTES))
-        ret = self._dev.read(self._EP1_in, self._EP1_in_size)
-
-        if len(ret) == 64:
-            ack = struct.unpack('<HHHHLL6sBBB15sL16sL', ret)
-            if ack[3] == 0:
-                return ack[9]
-            else:
-                print "Error code: %i" % ack[3]
-                return -1
-        else:
-            print "Unexpected msg lenght: %i vs 64" % len(ret)
-            return -1
-
-    def _get_sw_version(self):
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBB16sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_GET_SW_VERSION,0x00000000,0x00000000,0x0000,0x00,0x00,'',\
-        0x14,'',self._END_BYTES))
-        ret = self._dev.read(self._EP1_in, self._EP1_in_size)
-
-        if len(ret) == 64:
-            ack = struct.unpack('<HHHHLL6sBBB15sL16sL', ret)
-            if ack[3] == 0:
-                return ack[9]
-            else:
-                print "Error code: %i" % ack[3]
-                return -1
-        else:
-            print "Unexpected msg lenght: %i vs 64" % len(ret)
-            return -1
-
-
-    def _set_integration_time(self, time_us):
-        """
-        Sets the integration time in us.
-
-        :param time_us: Integration time in us.
-        :returns: The actual integration time returned by the spectrometer or -1 in case of error
+        """get or set the integration_time in seconds
 
         """
+        if time is not None:
+            self._set_integration_time(time)
+        return self._integration_time
+
+    def wavelengths(self, *args, **kwargs):
+        # TODO: add function paramters
+        return self._wl
+
+    def intensities(self, *args, **kwargs):
+        # TODO: add function paramters
+        return self._request_spectrum()
+
+    def spectrum(self, *args, **kwargs):
+        # TODO: add function paramters
+        return np.vstack(self._wl, self._request_spectrum())
 
 
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBBL12sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_SET_INTEGRATION_TIME,0x00000000,0x00000000,0x0000,0x00,0x04,time_us,'',\
-        0x14,'',self._END_BYTES))
+    def _query_data(self, msgtype, payload):
+        """recommended query function"""
+        msg = self._construct_outgoing_message(msgtype, payload, request_ACK=False)
+        ret = self._usb_query(msg)
 
-        try:
-            ret = self._dev.read(self._EP1_in, self._EP1_in_size)
-            if len(ret) == 64:
-                ack = struct.unpack('<HHHHLL6sBBL12sL16sL', ret)
-                if ack[3] == 0:
-                    time_us = ack[9]
-                    print "Error setting integration time"
-                    return -1
-                else:
-                    print "Error code: %i" % ack[3]
-                    return -1
-            else:
-                print "Unexpected msg lenght: %i vs 64" % len(ret)
-                return -1
-        except Exception:
-            #No error message
-            self._it = time_us
+        remaining_bytes = self._check_incoming_message_header(ret[:44])
+        if remaining_bytes != len(ret[44:]):
+            raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
 
-    def _set_scan_averages(self, scan_averages):
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBBH14sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_SET_AVG_SCANS,0x00000000,0x00000000,0x0000,0x00,0x02,scan_averages,'',\
-        0x14,'',self._END_BYTES))
+        self._check_incoming_message_footer(ret[-14:])
+        data = self._extract_message_data(ret)
+        return data
 
-        try:
-            ret = self._dev.read(self._EP1_in, self._EP1_in_size)
-            if len(ret) == 64:
-                ack = struct.unpack('<HHHHLL6sBBH14sL16sL', ret)
-                if ack[3] == 0:
-                    print ack[9]
-                    print "Error setting integration time"
-                    return -1
-                else:
-                    print "Error code: %i" % ack[3]
-                    return -1
-            else:
-                print "Unexpected msg lenght: %i vs 64" % len(ret)
-                return -1
-        except Exception:
-            #No error message
-            self._scan_averages = scan_averages
+    def _send_command(self, msgtype, payload):
+        """recommended command function"""
+        msg = self._construct_outgoing_message(msgtype, payload, request_ACK=True)
+        ret = self._usb_query(msg)
+        self._check_incoming_message_header(ret[:44])
+        self._check_incoming_message_footer(ret[-14:])
+        return
 
 
-    def _get_scan_averages(self):
-        #TODO: Not working as expected, returns error
-        """
-        Gets the coefficient count for a given command.
-
-        :param command: E.g. Wavelength calibration, stray light...
-        :returns: The value of the coefficient count stored in EEPROM.
+    def _set_integration_time(self, time):
+        """Sets the integration time in seconds
 
         """
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBB16sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_GET_AVG_SCANS,0x00000000,0x00000000,0x0000,0x00,0x00,'',\
-        0x14,'',self._END_BYTES))
-        ret = self._dev.read(self._EP1_in, self._EP1_in_size)
+        integration_time_us = int(time * 1000000)
+        self._send_command(self.MSG_SET_INTEGRATION_TIME, struct.pack("<L", integration_time_us))
+        return integration_time_us * 1e-6
 
-        if len(ret) == 64:
-            ack = struct.unpack('<HHHHLL6sBBH14sL16sL', ret)
-            if ack[3] == 0:
-                return ack[9]
-            else:
-                print "Error code: %i" % ack[3]
-                return -1
-        else:
-            print "Unexpected msg lenght: %i vs 64" % len(ret)
-            return -1
 
+    def _get_wavelengths(self):
+        """returns an array of wavelengths for the STS spectrometer
+
+        """
+        # Get the numer of wavelength coefficients first
+        data = self._query_data(self.MSG_GET_WAVELENGTH_COEFFICIENT_COUNT, "")
+        N_wlcoeff = struct.unpack("<B", data)
+
+        # Then query the coefficients
+        wlcoefficients = []
+        for i in range(N_wlcoeff):
+            data = self._query_data(self.MSG_GET_WAVELENGTH_COEFFICIENT, struct.pack("<B", i))
+            wlcoefficients.append(struct.unpack("<f", data))
+
+        # Now, generate the wavelength array
+        return sum( wlcoefficients[i] * np.arange(self._pixels, dtype=np.float64)**i for i in range(N_wlcoeff) )
 
     def _request_spectrum(self):
-        """
-        Return the spectrum array.
-
-        :returns: An array with 1024 unsigned short elements and the spectral intensity.
-        """
-        # XXX: 100000 was an arbitary choice. Should probably be a little less than the USB timeout
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBB16sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_GET_CORRECTED_SPECTRUM,0x00000000,0x00000000,0x0000,0x00,0x00,'',\
-        0x14,'',self._END_BYTES))
-
-        time.sleep( max((self._it+100000)*self._scan_averages , 0) * 1e-6 )
-        ret = [self._dev.read(self._EP1_in, self._EP1_in_size) for _ in range(33)]
-        ret = sum(ret[1:], ret[0])
-
-        spectrum = struct.unpack('<HHHHLLLHBB16sL1024H16sL', ret)
-
-        return spectrum[12:1036]
-
-
-    def _get_wavelength_calibration(self):
-        return [float(self._query_coefficient(i,self._MSG_GET_WAVELENGTH_COEFF)) for i in range(4)]
-
-    def _get_nonlinearity_calibration(self):
-        nl_coef = int(self._query_coefficient_count(self._MSG_GET_NONLINEAR_COEFF_COUNT))
-        if nl_coef != 8:
-            # Don't care about this right now
-            raise _OOError('This spectrometer has less correction factors')
-        return [float(self._query_coefficient(i,self._MSG_GET_NONLINEAR_COEFF)) for i in range(nl_coef)]
-
-    def _get_stray_light_calibration(self):
-        sl_coef = int(self._query_coefficient_count(self._MSG_GET_STRAYLIGHT_COEFF_COUNT))
-
-        return [float(self._query_coefficient(i,self._MSG_GET_STRAYLIGHT_COEFF)) for i in range(sl_coef)]
-
-
-    def _read_irradiance_calibration(self):
-        """"
-        Return the irradiance calibration stores in the STS.
-
-        :returns: An array with 1024 floating elements.
-        """
-
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBB16sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_GET_IRRADIANCE_COEFF,0x00000000,0x00000000,0x0000,0x00,0x00,'',\
-        0x14,'',self._END_BYTES))
-
-        ret = [self._dev.read(self._EP1_in, self._EP1_in_size) for _ in range(65)]
-        ret = sum(ret[1:], ret[0])
-        #print "".join('%02x' % i for i in ret)
-        spectrum = struct.unpack('<HHHHLLLHBB16sL1024f16sL', ret)
-        #print(spectrum[12:1036])
-        return spectrum[12:1036]
-
-
-    def _query_coefficient_count(self, command):
-        """
-        Gets the coefficient count for a given command.
-
-        :param command: E.g. Wavelength calibration, stray light...
-        :returns: The value of the coefficient count stored in EEPROM.
+        """returns the spectrum array.
 
         """
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBB16sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        command,0x00000000,0x00000000,0x0000,0x00,0x00,'',\
-        0x14,'',self._END_BYTES))
-        ret = self._dev.read(self._EP1_in, self._EP1_in_size)
+        # Get all data
+        msg = self._construct_outgoing_message(self.MSG_GET_AND_SEND_RAW_SPECTRUM, "")
+        self._usb_send(msg)
+        time.sleep(max(self._integration_time - self._USBTIMEOUT, 0))
+        ret = self._usb_read()
 
-        if len(ret) == 64:
-            ack = struct.unpack('<HHHHLL6sBBB15sL16sL', ret)
-            if ack[3] == 0:
-                return ack[9]
-            else:
-                print "Error code: %i" % ack[3]
-                return -1
+        remaining_bytes = self._check_incoming_message_header(ret[:44])
+        length_payload_footer = remaining_bytes
+
+        while True:
+            if remaining_bytes <= 0:
+                break
+            ret += self._usb_read()
+            remaining_bytes -= self._EPin0_size  # packet size is 64 here...
+
+        if length_payload_footer != len(ret[44:]):
+            raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
+
+        self._check_incoming_message_footer(ret[-14:])
+        data = self._extract_message_data(ret)
+
+        spectrum = struct.unpack("<%dH" % self._pixels, data)
+        return np.array(spectrum, dtype=np.float64)
+
+
+    def _construct_outgoing_message(self, msgtype, payload, request_ACK=False, regarding=None):
+        """message layout, see STS datasheet
+
+        """
+        if request_ACK == True:
+            flags = self.FLAG_REQUEST_ACK
         else:
-            print "Unexpected msg lenght: %i vs 64" % len(ret)
-            return -1
+            flags = 0
 
+        if regarding is None:
+            regarding = 0
 
-    def _query_coefficient(self, index, command):
-        """
-        Sets the integration time in us.
-
-        :param index: Index of the coefficient to retrieve.
-
-        :param command: E.g. Wavelength calibration, stray light...
-        :returns: The value of the coefficient stored in EEPROM.
-
-        """
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBBB15sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        command,0x00000000,0x00000000,0x0000,0x00,0x01,index,'',\
-        0x14,'',self._END_BYTES))
-        ret = self._dev.read(self._EP1_in, self._EP1_in_size)
-
-        if len(ret) == 64:
-            ack = struct.unpack('<HHHHLL6sBBf12sL16sL', ret)
-            if ack[3] == 0:
-                return ack[9]
-            else:
-                print "Error code: %i" % ack[3]
-                return -1
+        if len(payload) <= 16:
+            payload_fmt = "0s"
+            immediate_length = len(payload)
+            immediate_data = payload
+            payload = ""
+            bytes_remaining = 20  # Checksum + footer
         else:
-            print "Unexpected msg lenght: %i vs 64" % len(ret)
-            return -1
+            payload_fmt = "%ds" % len(payload)
+            immediate_length = 0
+            immediate_data = ""
+            bytes_remaining = 20 + len(payload)
 
-    def _read_temperatures(self):
+        FMT = self.HEADER_FMT + payload_fmt + self.FOOTER_FMT
+
+        msg = struct.pack(FMT, self.HEADER_START_BYTES,
+                               self.HEADER_PROTOCOL_VERSION,
+                               flags,
+                               self.NO_ERROR,
+                               msgtype,
+                               regarding,
+                               self.RESERVED,
+                               self.CHECKSUM_TYPE_NONE,
+                               immediate_length,
+                               immediate_data,
+                               bytes_remaining,
+                               payload,
+                               self.NO_CHECKSUM,
+                               self.FOOTER)
+        return msg
+
+    def _check_incoming_message_header(self, header):
+        """message layout, see STS datasheet
+
         """
-        Reads the sensor temperatures and returns an float array with the.
-        [0] is the temperature of the detector
-        [1] is the temperature of the controller
+        assert len(header) == 44, "header has wrong length! len(header): %d" % len(header)
 
-        :returns: a float array with two elements.
+        data = struct.unpack(self.HEADER_FMT, header)
+
+        assert data[0] == self.HEADER_START_BYTES, 'header start_bytes wrong: %d' % data[0]
+        assert data[1] == self.HEADER_START_BYTES, 'header protocol version wrong: %d' % data[1]
+
+        flags = data[2]
+        if flags == 0:
+            pass
+        if flags & self.FLAG_RESPONSE_TO_REQUEST:
+            pass  # TODO: propagate?
+        if flags & self.FLAG_ACK:
+            pass  # TODO: propagate?
+        if flags & self.FLAG_REQUEST_ACK:
+            pass  # TODO: only the host should be able to set this?
+        if (flags & self.FLAG_NACK) or (flags & self.FLAG_HW_EXCEPTION):
+            error = data[3]
+            if error != 0:  # != SUCCESS
+                raise _OOError(self.ERROR_CODES[error])
+            else:
+                pass  # TODO: should we do simething here?
+        if flags & self.FLAG_PROTOCOL_DEPRECATED:
+            raise _OOError("Protocol deprecated?!?")
+
+        # msgtype = data[4]
+        # regarding = data[5]
+
+        checksumtype = data[7]  # TODO: implement checksums.
+        assert checksumtype == self.NO_CHECKSUM, 'the device wants a md5 checksum...'
+
+        # immediate_length = data[8]
+        # immediate_data = data[9]
+        bytes_remaining = data[10]
+
+        return bytes_remaining
+
+    def _check_incoming_message_footer(self, footer):
+        """message layout, see STS datasheet
 
         """
-        self._dev.write(self._EP1_out, struct.pack('<HHHHLLLHBB16sL16sL', \
-        self._START_BYTES,self._PROTOCOL_VERSION,0x0000,0x0000,\
-        self._MSG_GET_ALL_TEMPERATURE,0x00000000,0x00000000,0x0000,0x00,0x00,'',\
-        0x14,'',self._END_BYTES))
+        assert len(footer) == 20, "footer has wrong length! len(footer): %d" % len(footer)
 
-        ret = self._dev.read(self._EP1_in, self._EP1_in_size)
+        data = struct.unpack(self.FOOTER_FMT, footer)
 
-        ack = struct.unpack('<HHHHLLLHBB3f4sL16sL', ret)
+        # TODO: implement checksums
+        assert data[0] == "", "the device sent a md5 checksum..."
 
-        return [ack[10],ack[12]]
+        assert data[1] == self.FOOTER, "the device returned a wrong footer: %d" % data[1]
+
+        return
+
+    def _extract_message_data(self, msg):
+        """message layout, see STS datasheet
+
+        """
+        payload_length = len(msg) - 44 - 20  # - HeaderLength - FooterLength
+        assert payload_length >= 0, "the received message was shorter than 64 bytes: %d" % payload_length
+        payload_fmt = "%ds" % payload_length
+        FMT = self.HEADER_FMT + payload_fmt + self.FOOTER_FMT
+
+        data = struct.unpack(FMT, msg)
+
+        msgtype = data[4]
+
+        immediate_length = data[8]
+        immediate_data = data[9]
+        payload = data[11]
+
+        if (immediate_length > 0) and len(payload) > 0:
+            raise _OOError("the device returned immediate data and payload data? cmd: %d" % msgtype)
+        elif immediate_length > 0:
+            return immediate_data[:immediate_length]
+        elif payload_length > 0:
+            return payload
+        else:
+            return ""
+
+
+    def _initialize(self):
+        """ Empty USB buffer """
+        # TODO: check if this is necessary?
+        while(True):
+            try:
+                self._usb_read()
+            except:
+                break
