@@ -68,7 +68,7 @@ class STS(_OOSpec, _OOUSBComm):
 
     NO_CHECKSUM = ""
 
-    FOOTER = 0xC5C4C3C2
+    FOOTER = 0xC2C3C4C5  # the datasheet specifies it in this order...
 
     # Generic Device Commands
     MSG_RESET = 0x00000000
