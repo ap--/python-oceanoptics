@@ -189,7 +189,7 @@ class STS(_OOSpec, _OOUSBComm):
 
         """
         if time is not None:
-            self._set_integration_time(time)
+            self._integration_time = self._set_integration_time(time)
         return self._integration_time
 
     def wavelengths(self, *args, **kwargs):
