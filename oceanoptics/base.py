@@ -289,3 +289,135 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
         return ret
 
 
+class OceanOpticsTEC(OceanOpticsUSBComm):
+    """
+    Class for the TEC found in QE65000 and QE65Pro
+    """
+
+    def _set_fan_state(self, state):
+        """
+        Sets the fan state (0x70)
+        Switches fan always to on, switching the fan off might be unsafe
+
+        """
+        time.sleep(0.2)  # wait 200ms
+        self._usb_send(struct.pack('<BBB', 0x70, 0x01, 0x00))
+        time.sleep(0.2)  # wait 200ms
+
+
+    def _set_tec_controller_state(self, state):
+        """
+        Switches the TEC on and off (0x71)
+        :param state: 0x01 for on, 0x00 for off
+        """
+        time.sleep(0.2)  # wait 200ms
+        self._usb_send(struct.pack('<BBB', 0x71, state, 0x00))
+        time.sleep(0.2)  # wait 200ms
+
+
+    def _tec_controller_read(self):
+        """
+        Function for reading information (temperature setpoint) from the TEC (0x72)
+        :return: data from TEC
+        """
+        time.sleep(0.2)  # wait 200ms
+        self._usb_send(struct.pack('<B', 0x72))
+        time.sleep(0.2)  # wait 200ms
+        ret = self._usb_read()
+        time.sleep(0.2)  # wait 200ms
+        return ret
+
+
+    def _tec_controller_write(self, temp):
+        """
+        Sets the temperature setpoint for the TEC (0x73)
+        :param temp: setpoint (temperature) for the TEC
+        """
+        #fixme: still not sure if '>Bh' is correct, '<Bh' does not work. Manual is not clear in this case
+        message = struct.pack('>Bh', 0x73, (temp * 10))
+        time.sleep(0.2)  # wait 200ms
+        self._usb_send(message)
+        time.sleep(0.2)  # wait 200ms
+
+    def get_temperatures(self):
+        """
+        0x6C read pcb and heatsink temperature
+        """
+        time.sleep(0.2)  # wait 200ms
+        self._usb_send(struct.pack('<B', 0x6C))
+        time.sleep(0.2)  # wait 200ms
+        ret = self._usb_read()
+        time.sleep(0.2)
+        if (ret[0] != 0x08) | (ret[0] != 0x08):
+            raise _OOError('read_temperatures: Wrong answer')
+        pcb = struct.unpack('<h', ret[1:3])[0] * 0.003906
+        heatsink = struct.unpack('<h', ret[4:6])[0] * 0.003906
+        ret = (pcb, heatsink)
+        return ret
+
+
+    def get_TEC_temperature(self):
+        """
+        Read out temperature of the TEC
+        :return: temperature of the TEC
+        """
+        temp = self._tec_controller_read()
+        temp = struct.unpack('<h', temp)[0] / 10  # decode TEC temperature
+        return temp
+
+
+    def set_TEC_temperature(self, temperature):
+        """
+        function for setting the setpoint of the TEC
+        :param temperature: temperature setpoint
+        :return: temperature of the TEC
+        """
+        self.get_TEC_temperature()  # Read Temp
+        self._tec_controller_write(0x00)  # disbable TEC
+        self._tec_controller_write(temperature)  # write temperature setpoint
+        self._set_fan_state(0x01)  # enable Fan
+        self._tec_controller_write(0x01)  # enable TEC
+        time.sleep(3)  # wait until TEC has cooled down
+        return self.get_TEC_temperature()
+
+
+    def initialize_TEC(self):
+        """
+        function for initializing the TEC
+        - the "waiting for cooldown" time might be too short, but setting it higher would be annoying
+        - A standard setpoint of -15 degree celcius is choosen, should work for most cases
+        """
+        setpoint = -18  # Standard value for setpoint, should be good for most cases
+        print('Initializing TEC:')
+        temp = self.set_TEC_temperature(setpoint)
+        print('Setpoint = %s' % setpoint)
+        print('Waiting for cooldown')
+        for i in range(5):
+            time.sleep(1)
+            print('...')
+        temp = self.get_TEC_temperature()
+        print('TEC Temperature: %s' % temp)
+        print('TEC initialized')
+
+
+    # following 2 function are not needed probably:
+
+    def _tec_controller_get_status(self):
+        """
+        Function for reading the status of the TEC controller
+        :return: TEC enable status, FAN enable status, TEC setpoint
+        """
+        ret = self._query_information(17, raw=True)
+        ret = ret[2:6]  # only use usefull information
+        setpoint = struct.unpack('<h', ret[2:4])[0] / 10  # decode TEC setpoint
+        ret = (ret[0], ret[1], setpoint)  # (TEC enable, FAN enable, TEC setpoint)
+        return ret
+
+
+    def _query_information(self, address, raw=False):
+        """ send command 0x05 """
+        ret = self._usb_query(struct.pack('<BB', 0x05, int(address)))
+        if bool(raw): return ret
+        if ret[0] != 0x05 or ret[1] != int(address) % 0xFF:
+            raise _OOError('query_information: Wrong answer')
+        return ret[2:ret[2:].index(0) + 2].tostring()
