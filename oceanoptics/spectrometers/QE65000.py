@@ -59,3 +59,10 @@ class QE65000(_OOBase):
         time.sleep(2)
         print('TEC initialized')
         return self._read_TEC_temperature()
+
+    def _set_integration_time(self, time_us):
+        """ send command 0x02 """
+        # XXX: The QE65000 requires the time set in Milliseconds!
+        #      This overides the provided function of OOBase
+        time_ms = int(time_us/1000)
+        self._usb_send(struct.pack('<BI', 0x02, time_ms))
