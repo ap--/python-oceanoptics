@@ -19,18 +19,18 @@ class mpl:
 
 class DynamicPlotter(Gtk.Window):
 
-    def __init__(self, sample_interval=0.1, smoothing=1, oversampling=1, raw=False, size=(600,350), outfile=None):
+    def __init__(self, sample_interval_sec=0.1, smoothing=1, oversampling=1, raw=False, size=(600,350), outfile=None):
         # Gtk stuff
         Gtk.Window.__init__(self, title='Ocean Optics Spectrometer')
         self.connect("destroy", lambda x : Gtk.main_quit())
         self.set_default_size(*size)
         # Data stuff
-        self.sample_interval = int(sample_interval*1000)
+        self.sample_interval_ms = int(sample_interval_sec*1000)
         self.smoothing = int(smoothing)
         self._sample_n = 0
         self.raw = bool(raw)
         self.spectrometer = oceanoptics.get_a_random_spectrometer()
-        self.spectrometer.integration_time(time=(sample_interval * 0.8))
+        self.spectrometer.integration_time(time_sec=(sample_interval_sec * 0.8))
         self.wl = self.spectrometer.wavelengths()
         self.sp = self.spectrometer.intensities()
         self.sp = np.zeros((len(self.sp), int(oversampling)))
@@ -90,7 +90,7 @@ class DynamicPlotter(Gtk.Window):
 
 
     def run(self):
-        GLib.timeout_add(self.sample_interval, self.update_plot)
+        GLib.timeout_add(self.sample_interval_ms, self.update_plot)
         Gtk.main()
 
 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    m = DynamicPlotter(sample_interval=args.interval, raw=args.raw, smoothing=args.smooth,
+    m = DynamicPlotter(sample_interval_sec=args.interval, raw=args.raw, smoothing=args.smooth,
                        oversampling=args.oversample, outfile=args.out)
     m.run()
 
