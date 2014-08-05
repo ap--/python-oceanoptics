@@ -184,12 +184,12 @@ class STS(_OOSpec, _OOUSBComm):
         # set the integration time
         self._integration_time = self._set_integration_time(integration_time)
 
-    def integration_time(self, time=None):
+    def integration_time(self, time_sec=None):
         """get or set the integration_time in seconds
 
         """
-        if time is not None:
-            self._integration_time = self._set_integration_time(time)
+        if time_sec is not None:
+            self._integration_time = self._set_integration_time(time_sec)
         return self._integration_time
 
     def wavelengths(self, *args, **kwargs):
@@ -233,11 +233,11 @@ class STS(_OOSpec, _OOUSBComm):
         return
 
 
-    def _set_integration_time(self, time):
+    def _set_integration_time(self, time_sec):
         """Sets the integration time in seconds
 
         """
-        integration_time_us = int(time * 1000000)
+        integration_time_us = int(time_sec * 1000000)
         self._send_command(self.MSG_SET_INTEGRATION_TIME, struct.pack("<L", integration_time_us))
         return integration_time_us * 1e-6
 

@@ -35,8 +35,8 @@ class OceanOpticsSpectrometer(object):
         """ returns a 2d np.array with all wavelengths and intensities """
         raise NotImplementedError
 
-    def integration_time(self, time=None):
-        """ returns / sets the current integration_time """
+    def integration_time(self, time_sec=None):
+        """ returns / sets the current integration_time in seconds """
         raise NotImplementedError
 
 
@@ -204,11 +204,11 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
                                 correct_darkcounts=correct_darkcounts,
                                 correct_saturation=correct_saturation)))
 
-    def integration_time(self, time=None):
+    def integration_time(self, time_sec=None):
         """get or set integration_time in seconds
         """
-        if not (time is None):
-            time_us = time * 1000000
+        if not (time_sec is None):
+            time_us = time_sec * 1000000
             self._set_integration_time(time_us)
         self._integration_time = self._query_status()['integration_time']*1e-6
         return self._integration_time
