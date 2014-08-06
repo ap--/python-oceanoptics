@@ -387,7 +387,7 @@ class OceanOpticsTEC(OceanOpticsUSBComm):
         - the "waiting for cooldown" time might be too short, but setting it higher would be annoying
         - A standard setpoint of -15 degree celcius is choosen, should work for most cases
         """
-        setpoint = -18  # Standard value for setpoint, should be good for most cases
+        setpoint = -15  # Standard value for setpoint, should be good for most cases
         print('Initializing TEC:')
         temp = self.set_TEC_temperature(setpoint)
         print('Setpoint = %s' % setpoint)
