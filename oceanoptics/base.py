@@ -389,12 +389,12 @@ class OceanOpticsTEC(OceanOpticsUSBComm):
         temp = self.set_TEC_temperature(setpoint)
         print('Setpoint = %s' % setpoint)
         print('Waiting for cooldown')
-        for i in range(5):
-            time.sleep(2)
-            print('...')
+        for i in range(10):
+            time.sleep(1)
             temp = self.get_TEC_temperature()
-            if (temp < setpoint): break
-        if (temp < setpoint):
+            print('... Temp.: %s ' % temp)
+            if temp < setpoint: break
+        if temp < setpoint:
             print('Cooldown complete')
         else:
             print('Cooldown not complete, wait some more seconds before using')
