@@ -3,8 +3,8 @@ from distutils.core import setup
 
 setup(
     name='oceanoptics',
-    version='0.2.6',
-    author='Andreas Poehlmann, Jose A. Jimenez-Berni, Ben Gamari, Simon Dickreuter',
+    version='0.2.7',
+    author='Andreas Poehlmann, Jose A. Jimenez-Berni, Ben Gamari, Simon Dickreuter, Ian Ross Williams',
     author_email='mail@andreaspoehlmann.de',
     packages=['oceanoptics', 'oceanoptics.spectrometers'],
     description='A Python driver for Ocean Optics spectrometers.',
