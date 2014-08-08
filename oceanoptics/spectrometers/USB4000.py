@@ -27,17 +27,6 @@ class USB4000(_OOBase):
         self._EPin6_size = _OOModelConfig['USB4000']['EPin6_size']
 
 
-    def __repr__(self):
-        rtn  = "USB4000 status:\n"
-        rtn += "  USB speed = %d\n" % (self._usb_speed)
-        rtn += "  Integration time = %dus\n" % (self._integration_time)
-        rtn += "  Pixels = %d\n" % (self._pixels)
-        rtn += "  End points = 1:%x 2:%x 6:%x\n" % (self._EPin1, self._EPin2, self._EPin6)
-        rtn += "  Number of packets per scan = %d" % (self._packet_N)
-        rtn += "  Packet size = %d\n" % (self._packet_size)
-        return rtn
-
-
     def _request_spectrum(self):
         self._usb_send(struct.pack('<B', 0x09))
         time.sleep(max(self._integration_time - self._USBTIMEOUT, 0))
