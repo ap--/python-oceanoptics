@@ -12,6 +12,7 @@
 import struct
 import time
 
+from oceanoptics.base import OceanOpticsBase as _OOBase
 from oceanoptics.defines import OceanOpticsError as _OOError
 from oceanoptics.defines import OceanOpticsModelConfig as _OOModelConfig
 #----------------------------------------------------------
