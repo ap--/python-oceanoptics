@@ -20,13 +20,11 @@ from oceanoptics.defines import OceanOpticsModelConfig as _OOModelConfig
 class USB4000(_OOBase):
 
     def __init__(self):
-        super(USB4000, self).__init__('USB4000')
-
         self._EPin2 = _OOModelConfig['USB4000']['EPin2']
         self._EPin6 = _OOModelConfig['USB4000']['EPin6']
         self._EPin2_size = _OOModelConfig['USB4000']['EPin2_size']
         self._EPin6_size = _OOModelConfig['USB4000']['EPin6_size']
-
+        super(USB4000, self).__init__('USB4000')
 
     def _request_spectrum(self):
         self._usb_send(struct.pack('<B', 0x09))
