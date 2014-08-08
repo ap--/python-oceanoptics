@@ -99,8 +99,8 @@ OceanOpticsModelConfig = {
 OceanOpticsSpectrumConfig = {
     'Apex'          : { 0x80 : [  9, 512, lambda x : x      ],
                         0x00 : [ 66,  64, lambda x : x      ] },
-    'HR2000+'       : { 0x80 : [  8, 512, lambda x : x^0x20 ],
-                        0x00 : [ 64,  64, lambda x : x^0x20 ] },
+    'HR2000+'       : { 0x80 : [  8, 512, lambda x : x^0x2000 ],
+                        0x00 : [ 64,  64, lambda x : x^0x2000 ] },
     'HR4000'        : { 0x80 : [ 15, 512, lambda x : x      ],
                         0x00 : [120,  64, lambda x : x      ] },
     'Maya'          : { 0x80 : [  9, 512, lambda x : x      ],
