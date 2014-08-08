@@ -50,10 +50,14 @@ OceanOpticsModelConfig = {
                 'EPout': 0x02,
                 'EPin0': 0x87, 'EPin0_size': 64,
                 'EPin1': 0x07, 'EPin1_size': 64, },
+    # The USB4000 returns spectra split over two end points
+    #  EPin6 for first 1024 pixels then EPin2 for the rest
     'USB4000': {'ProductId': [0x1022],
                 'EPout': 0x01,
                 'EPin0': 0x81, 'EPin0_size': 64,
-                'EPin1': 0x82, 'EPin1_size': 512, },
+                'EPin1': 0x81, 'EPin1_size': 64,
+                'EPin2': 0x82, 'EPin2_size': 512,
+                'EPin6': 0x86, 'EPin6_size': 512 },
     'HR2000': {'ProductId': [0x100A, 0x1009],
                'EPout': 0x02,
                'EPin0': 0x87, 'EPin0_size': 64,
