@@ -7,7 +7,7 @@ associated with Ocean Optics. Use it at your own risk.
 **Currently working with:**
 
 * USB2000+
-* QE65000
+* QE65000 (Note: the TEC control is still in development)
 * STS (Note: The rewritten class supports protocol version _0x1100_)
 
 Those should work, but are untested:
