@@ -62,10 +62,14 @@ OceanOpticsModelConfig = {
                'EPout': 0x02,
                'EPin0': 0x87, 'EPin0_size': 64,
                'EPin1': 0x07, 'EPin1_size': 64, },
+    # The HR4000 returns spectra split over two end points
+    #  EPin6 for first 1024 pixels then EPin2 for the rest
     'HR4000': {'ProductId': [0x1012, 0x1011],
                'EPout': 0x01,
                'EPin0': 0x81, 'EPin0_size': 64,
                'EPin1': 0x82, 'EPin1_size': 512, },
+               'EPin2': 0x82, 'EPin2_size': 512,
+               'EPin6': 0x86, 'EPin6_size': 512 },
     'Torus': {'ProductId': [0x1040],
               'EPout': 0x01,
               'EPin0': 0x81, 'EPin0_size': 64,
