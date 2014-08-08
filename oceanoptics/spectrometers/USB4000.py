@@ -50,7 +50,6 @@ class USB4000(_OOSpec, _OOUSBComm):
         self._packet_N, self._packet_size, self._packet_func = (
                 _OOSpecConfig['USB4000'][self._usb_speed] )
 
-        print self
         self._init_robust_spectrum()
 
         # XXX: differs for some spectrometers...
@@ -223,7 +222,6 @@ class USB4000(_OOSpec, _OOUSBComm):
         if sync[0] != 0x69:
             raise _OOError('request_spectrum: Wrong sync byte')
 
-        print len(ret)
         spectrum = struct.unpack('<'+'H'*self._pixels, ret)
         spectrum = map(self._packet_func, spectrum)
         return spectrum
