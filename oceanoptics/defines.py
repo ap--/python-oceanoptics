@@ -50,10 +50,14 @@ OceanOpticsModelConfig = {
                 'EPout': 0x02,
                 'EPin0': 0x87, 'EPin0_size': 64,
                 'EPin1': 0x07, 'EPin1_size': 64, },
+    # The USB4000 returns spectra split over two end points
+    #  EPin6 for first 1024 pixels then EPin2 for the rest
     'USB4000': {'ProductId': [0x1022],
                 'EPout': 0x01,
                 'EPin0': 0x81, 'EPin0_size': 64,
-                'EPin1': 0x82, 'EPin1_size': 512, },
+                'EPin1': 0x81, 'EPin1_size': 64,
+                'EPin2': 0x82, 'EPin2_size': 512,
+                'EPin6': 0x86, 'EPin6_size': 512 },
     'HR2000': {'ProductId': [0x100A, 0x1009],
                'EPout': 0x02,
                'EPin0': 0x87, 'EPin0_size': 64,
@@ -95,8 +99,8 @@ OceanOpticsModelConfig = {
 OceanOpticsSpectrumConfig = {
     'Apex'          : { 0x80 : [  9, 512, lambda x : x      ],
                         0x00 : [ 66,  64, lambda x : x      ] },
-    'HR2000+'       : { 0x80 : [  8, 512, lambda x : x^0x2000 ],
-                        0x00 : [ 64,  64, lambda x : x^0x2000 ] },
+    'HR2000+'       : { 0x80 : [  8, 512, lambda x : x^0x20 ],
+                        0x00 : [ 64,  64, lambda x : x^0x20 ] },
     'HR4000'        : { 0x80 : [ 15, 512, lambda x : x      ],
                         0x00 : [120,  64, lambda x : x      ] },
     'Maya'          : { 0x80 : [  9, 512, lambda x : x      ],
