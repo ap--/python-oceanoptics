@@ -330,8 +330,7 @@ class OceanOpticsTEC(OceanOpticsUSBComm):
         Sets the temperature setpoint for the TEC (0x73)
         :param temp: setpoint (temperature) for the TEC
         """
-        #fixme: still not sure if '>Bh' is correct, '<Bh' does not work. Manual is not clear in this case
-        message = struct.pack('>Bh', 0x73, (temp * 10))
+        message = struct.pack('<Bh', 0x73, (temp * 10 + 1))
         self._usb_send(message)
         time.sleep(0.1)  # wait 200ms
 
@@ -382,7 +381,7 @@ class OceanOpticsTEC(OceanOpticsUSBComm):
         - the "waiting for cooldown" time might be too short, but setting it higher would be annoying
         - A standard setpoint of -15 degree celcius is choosen, should work for most cases
         """
-        setpoint = -15  # Standard value for setpoint, should be good for most cases
+        setpoint = -17  # Standard value for setpoint, results in a TEC temperature of ~-15°C
         print(
         'Attention: If USB power is applied prior to the TEC power, setting the TEC temperature will not be effective.')
         print('Initializing TEC:')
@@ -393,7 +392,7 @@ class OceanOpticsTEC(OceanOpticsUSBComm):
             time.sleep(1)
             temp = self.get_TEC_temperature()
             print('... Temp.: %s ' % temp)
-            if temp < setpoint: break
+            if temp <= (setpoint - 2): break  # Setpoint is 2° lower than actual Temperature !
         if temp < setpoint:
             print('Cooldown complete')
         else:
