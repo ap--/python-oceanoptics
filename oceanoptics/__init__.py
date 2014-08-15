@@ -1,5 +1,5 @@
 
-__version__ = '0.2.8'
+__version__ = '0.2.9'
 
 from oceanoptics.spectrometers.XXX2000 import USB2000, HR2000
 from oceanoptics.spectrometers.XXX2000plus import USB2000plus, HR2000plus
