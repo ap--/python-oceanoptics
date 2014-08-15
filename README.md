@@ -1,23 +1,24 @@
+**This software is not associated with Ocean Optics. Use it at your own risk.**
+
 ## Ocean Optics python module ##
 
 This python module provides access to some basic functionality of some [Ocean
-Optics](http://www.oceanoptics.com/) spectrometers. This software is not
-associated with Ocean Optics. Use it at your own risk.
+Optics](http://www.oceanoptics.com/) spectrometers. 
 
 **Currently working with:**
 
 * USB2000+
 * USB4000
-* QE65000 (Note: the TEC control is still in development)
+* QE65000
 * STS (Note: The rewritten class supports protocol version _0x1100_)
 
 Those should work, but are untested:
-* HR2000+
 * HR4000
+* QE65pro
+* HR2000+
 * apex
 * maya
 * maya2000pro
-* QE65pro
 * Torus
 
 Contributions are welcome.
@@ -75,22 +76,6 @@ or run some the example program _liveview.py_
 
 If you own any of the spectrometers listed below, feel free to contribute.
 
-
-#### Possible Additions ####
-
-These might actually already work.
-
-* USB2000
-* USB-LS450
-* USB-ISS-UVVIS
-* USB4000
-* HR2000+
-* HR4000
-* apex
-* maya
-* maya2000pro
-* QE65pro
-* Torus
 
 #### Not supported ####
 
