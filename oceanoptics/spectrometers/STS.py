@@ -19,7 +19,7 @@ from oceanoptics.base import OceanOpticsSpectrometer as _OOSpec
 from oceanoptics.base import OceanOpticsUSBComm as _OOUSBComm
 import numpy as np
 import time
-import md5
+import hashlib
 import warnings
 #----------------------------------------------------------
 
@@ -265,7 +265,7 @@ class STS(_OOSpec, _OOUSBComm):
             raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
 
         checksum = self._check_incoming_message_footer(ret[-20:])
-        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
+        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != hashlib.md5(ret[:-20]).digest()):
             # TODO: raise Error
             warnings.warn("The checksums differ, but we ignore this for now.")
         data = self._extract_message_data(ret)
@@ -287,7 +287,7 @@ class STS(_OOSpec, _OOUSBComm):
             raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
 
         checksum = self._check_incoming_message_footer(ret[-20:])
-        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
+        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != hashlib.md5(ret[:-20]).digest()):
             # TODO: raise Error
             warnings.warn("The checksums differ, but we ignore this for now.")
         data = self._extract_message_data(ret)
@@ -299,7 +299,7 @@ class STS(_OOSpec, _OOUSBComm):
         ret = self._usb_query(msg)
         _, checksumtype = self._check_incoming_message_header(ret[:44])
         checksum = self._check_incoming_message_footer(ret[-20:])
-        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
+        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != hashlib.md5(ret[:-20]).digest()):
             # TODO: raise Error
             warnings.warn("The checksums differ, but we ignore this for now.")
         return
