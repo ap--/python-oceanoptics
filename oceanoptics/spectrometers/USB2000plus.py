@@ -1,6 +1,6 @@
 # tested 
 #----------------------------------------------------------
-from ..base import OceanOpticsBase as _OOBase
+from oceanoptics.base import OceanOpticsBase as _OOBase
 #----------------------------------------------------------
 
 

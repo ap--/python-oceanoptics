@@ -1,9 +1,9 @@
 import usb.core
-from .defines import OceanOpticsSupportedModels as _OOSupMod
-from .defines import OceanOpticsModelConfig as _OOModConf
-from .defines import OceanOpticsVendorId as _OOVendorId
-from .defines import OceanOpticsError as _OOError
-from .base import OceanOpticsBase as _OOBase
+from oceanoptics.defines import OceanOpticsSupportedModels as _OOSupMod
+from oceanoptics.defines import OceanOpticsModelConfig as _OOModConf
+from oceanoptics.defines import OceanOpticsVendorId as _OOVendorId
+from oceanoptics.defines import OceanOpticsError as _OOError
+from oceanoptics.base import OceanOpticsBase as _OOBase
 
 
 def get_a_random_spectrometer():

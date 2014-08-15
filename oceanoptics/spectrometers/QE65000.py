@@ -1,8 +1,8 @@
 # tested
 # ----------------------------------------------------------
 from __future__ import print_function
-from ..base import OceanOpticsBase as _OOBase
-from ..base import OceanOpticsTEC as _OOTEC
+from oceanoptics.base import OceanOpticsBase as _OOBase
+from oceanoptics.base import OceanOpticsTEC as _OOTEC
 import struct
 #----------------------------------------------------------
 
