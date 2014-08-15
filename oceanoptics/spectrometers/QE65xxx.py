@@ -1,16 +1,12 @@
 # tested
 # ----------------------------------------------------------
-from __future__ import print_function
 from oceanoptics.base import OceanOpticsBase as _OOBase
 from oceanoptics.base import OceanOpticsTEC as _OOTEC
 import struct
 #----------------------------------------------------------
 
 
-class QE65000(_OOBase, _OOTEC):
-    def __init__(self):
-        super(QE65000, self).__init__('QE65000')
-        self.initialize_TEC()
+class _QE65xxx(_OOBase, _OOTEC):
 
     def _set_integration_time(self, time_us):
         """ send command 0x02 """
@@ -36,3 +32,25 @@ class QE65000(_OOBase, _OOTEC):
                 'packets_in_endpoint' : data[7],
                 'usb_speed' : data[10] }
         return ret
+
+
+#--------
+# tested
+#--------
+
+class QE65000(_QE56xxx):
+    def __init__(self):
+        super(QE65000, self).__init__('QE65000')
+        self.initialize_TEC()
+
+
+#----------
+# untested
+#----------
+
+class QE65pro(_QE65xxx):
+    def __init__(self):
+        super(QE65pro, self).__init__('QE65pro')
+        self.initialize_TEC()
+
+

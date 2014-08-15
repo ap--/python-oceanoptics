@@ -9,8 +9,7 @@ from oceanoptics.spectrometers.HR4000 import HR4000
 from oceanoptics.spectrometers.MAYA import MAYA
 from oceanoptics.spectrometers.MAYA2000pro import MAYA2000pro
 from oceanoptics.spectrometers.APEX import APEX
-from oceanoptics.spectrometers.QE65000 import QE65000
-from oceanoptics.spectrometers.QE65pro import QE65pro
+from oceanoptics.spectrometers.QE65xxx import QE65000, QE65pro
 from oceanoptics.spectrometers.TORUS import TORUS
 from oceanoptics.spectrometers.STS import STS
 
