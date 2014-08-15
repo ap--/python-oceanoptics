@@ -34,7 +34,7 @@ OceanOpticsModelConfig = {
                  'EPout': 0x01,
                  'EPin0': 0x81, 'EPin0_size': 64,
                  'EPin1': 0x82, 'EPin1_size': 512, },
-    'HR2000+': {'ProductId': [0x1012],
+    'HR2000+': {'ProductId': [0x1016],
                 'EPout': 0x01,
                 'EPin0': 0x81, 'EPin0_size': 64,
                 'EPin1': 0x82, 'EPin1_size': 512, },
