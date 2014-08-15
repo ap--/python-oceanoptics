@@ -46,7 +46,7 @@ OceanOpticsModelConfig = {
                 'EPout': 0x01,
                 'EPin0': 0x81, 'EPin0_size': 64,
                 'EPin1': 0x82, 'EPin1_size': 512, },
-    'USB2000': {'ProductId': [],  # XXX: Couldn't find productid
+    'USB2000': {'ProductId': [0x1002],
                 'EPout': 0x02,
                 'EPin0': 0x87, 'EPin0_size': 64,
                 'EPin1': 0x07, 'EPin1_size': 64, },
@@ -121,6 +121,8 @@ OceanOpticsSpectrumConfig = {
                         0x00 : [ 64,  64, lambda x : x      ] },
     'USB4000'       : { 0x80 : [ 15, 512, lambda x : x      ],
                         0x00 : [120,  64, lambda x : x      ] },
+    'USB2000'       : { 0x00 : [ 64,  64, lambda x : x      ] },
+    'HR2000'        : { 0x00 : [ 64,  64, lambda x : x      ] },
     }
 
 
@@ -135,6 +137,8 @@ OceanOpticsValidPixels = {
     'Torus'         : slice(20, 2048),
     'USB2000+'      : slice(20, 2048),
     'USB4000'       : slice(22, 3670),
+    'USB2000'       : slice(26, 2048),
+    'HR2000'        : slice(26, 2048),
     }
 
 
