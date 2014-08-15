@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 #
-# TODO: inherit from OceanOpticsSpectrometer and implement
-#       high level functions!s
+# STS spectrometer
+# ================
+#
+# To implement further functionality you basically just need to look at
+# the two communication layer functions:
+#  self._send_command and self._query_data
+#
+# based on those you can implement other commands.
+# call them with the right message constant in self._const.MSG_...
+# and the payload data packed in a string.
 #
 """ File:           STS.py
-    Author:        Jose A. Jimenez-Berni
-    Last change:    2013/05/20
+    Author:         Jose A. Jimenez-Berni, Andreas Poehlmann
+    Last change:    2014/08/15
 
     Python Interface for STS OceanOptics Spectometers.
     Current device classes:
@@ -19,13 +27,12 @@ from oceanoptics.base import OceanOpticsSpectrometer as _OOSpec
 from oceanoptics.base import OceanOpticsUSBComm as _OOUSBComm
 import numpy as np
 import time
-import md5
+import hashlib
 import warnings
 #----------------------------------------------------------
 
-
-class STS(_OOSpec, _OOUSBComm):
-    """Rewrite of STS class"""
+class _STSCONSTANTS(object):
+    """All relevant constants are stored here"""
 
     HEADER_START_BYTES = 0xC0C1
     HEADER_PROTOCOL_VERSION = 0x1100  # XXX: this seems to be the newest protocol version!!!
@@ -168,12 +175,13 @@ class STS(_OOSpec, _OOUSBComm):
                   "L"    # footer
                  )
 
+class STS(_OOSpec, _OOUSBComm):
+    """Rewrite of STS class"""
 
     def __init__(self, integration_time=0.001):
         super(STS, self).__init__('STS')
 
-        # This empties the USB buffer
-        # self._initialize()
+        self._const = _STSCONSTANTS
 
         # we can't query this info:
         self._pixels = 1024
@@ -183,6 +191,11 @@ class STS(_OOSpec, _OOUSBComm):
 
         # set the integration time
         self._integration_time = self._set_integration_time(integration_time)
+
+
+    #------------------------------------
+    # Implement High level functionality
+    #------------------------------------
 
     def integration_time(self, time_sec=None):
         """get or set the integration_time in seconds
@@ -204,41 +217,16 @@ class STS(_OOSpec, _OOUSBComm):
         # TODO: add function paramters
         return np.vstack((self._wl, self._request_spectrum()))
 
-
-    def _query_data(self, msgtype, payload):
-        """recommended query function"""
-        msg = self._construct_outgoing_message(msgtype, payload, request_ACK=False)
-        ret = self._usb_query(msg)
-
-        remaining_bytes, checksumtype = self._check_incoming_message_header(ret[:44])
-        if remaining_bytes != len(ret[44:]):
-            raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
-
-        checksum = self._check_incoming_message_footer(ret[-20:])
-        if (checksumtype == self.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
-            # TODO: raise Error
-            warnings.warn("The checksums differ, but we ignore this for now.")
-        data = self._extract_message_data(ret)
-        return data
-
-    def _send_command(self, msgtype, payload):
-        """recommended command function"""
-        msg = self._construct_outgoing_message(msgtype, payload, request_ACK=True)
-        ret = self._usb_query(msg)
-        _, checksumtype = self._check_incoming_message_header(ret[:44])
-        checksum = self._check_incoming_message_footer(ret[-20:])
-        if (checksumtype == self.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
-            # TODO: raise Error
-            warnings.warn("The checksums differ, but we ignore this for now.")
-        return
-
+    #-----------------
+    # low level layer
+    #-----------------
 
     def _set_integration_time(self, time_sec):
         """Sets the integration time in seconds
 
         """
         integration_time_us = int(time_sec * 1000000)
-        self._send_command(self.MSG_SET_INTEGRATION_TIME, struct.pack("<L", integration_time_us))
+        self._send_command(self._const.MSG_SET_INTEGRATION_TIME, struct.pack("<L", integration_time_us))
         return integration_time_us * 1e-6
 
 
@@ -247,13 +235,13 @@ class STS(_OOSpec, _OOUSBComm):
 
         """
         # Get the numer of wavelength coefficients first
-        data = self._query_data(self.MSG_GET_WAVELENGTH_COEFFICIENT_COUNT, "")
+        data = self._query_data(self._const.MSG_GET_WAVELENGTH_COEFFICIENT_COUNT, "")
         N_wlcoeff = struct.unpack("<B", data)[0]
 
         # Then query the coefficients
         wlcoefficients = []
         for i in range(N_wlcoeff):
-            data = self._query_data(self.MSG_GET_WAVELENGTH_COEFFICIENT, struct.pack("<B", i))
+            data = self._query_data(self._const.MSG_GET_WAVELENGTH_COEFFICIENT, struct.pack("<B", i))
             wlcoefficients.append(struct.unpack("<f", data)[0])
 
         # Now, generate the wavelength array
@@ -264,7 +252,7 @@ class STS(_OOSpec, _OOUSBComm):
 
         """
         # Get all data
-        msg = self._construct_outgoing_message(self.MSG_GET_AND_SEND_RAW_SPECTRUM, "")
+        msg = self._construct_outgoing_message(self._const.MSG_GET_AND_SEND_RAW_SPECTRUM, "")
         self._usb_send(msg)
         time.sleep(max(self._integration_time - self._USBTIMEOUT, 0))
         ret = self._usb_read()
@@ -285,7 +273,7 @@ class STS(_OOSpec, _OOUSBComm):
             raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
 
         checksum = self._check_incoming_message_footer(ret[-20:])
-        if (checksumtype == self.CHECKSUM_TYPE_MD5) and (checksum != md5.new(ret[:-20]).digest()):
+        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != hashlib.md5(ret[:-20]).digest()):
             # TODO: raise Error
             warnings.warn("The checksums differ, but we ignore this for now.")
         data = self._extract_message_data(ret)
@@ -293,13 +281,43 @@ class STS(_OOSpec, _OOUSBComm):
         spectrum = struct.unpack("<%dH" % self._pixels, data)
         return np.array(spectrum, dtype=np.float64)
 
+    #-----------------------------
+    # communication functionality
+    #-----------------------------
+
+    def _query_data(self, msgtype, payload):
+        """recommended query function"""
+        msg = self._construct_outgoing_message(msgtype, payload, request_ACK=False)
+        ret = self._usb_query(msg)
+
+        remaining_bytes, checksumtype = self._check_incoming_message_header(ret[:44])
+        if remaining_bytes != len(ret[44:]):
+            raise _OOError("There is a remaining packet length error: %d vs %d" % (remaining_bytes, len(ret[44:])))
+
+        checksum = self._check_incoming_message_footer(ret[-20:])
+        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != hashlib.md5(ret[:-20]).digest()):
+            # TODO: raise Error
+            warnings.warn("The checksums differ, but we ignore this for now.")
+        data = self._extract_message_data(ret)
+        return data
+
+    def _send_command(self, msgtype, payload):
+        """recommended command function"""
+        msg = self._construct_outgoing_message(msgtype, payload, request_ACK=True)
+        ret = self._usb_query(msg)
+        _, checksumtype = self._check_incoming_message_header(ret[:44])
+        checksum = self._check_incoming_message_footer(ret[-20:])
+        if (checksumtype == self._const.CHECKSUM_TYPE_MD5) and (checksum != hashlib.md5(ret[:-20]).digest()):
+            # TODO: raise Error
+            warnings.warn("The checksums differ, but we ignore this for now.")
+        return
 
     def _construct_outgoing_message(self, msgtype, payload, request_ACK=False, regarding=None):
         """message layout, see STS datasheet
 
         """
         if request_ACK == True:
-            flags = self.FLAG_REQUEST_ACK
+            flags = self._const.FLAG_REQUEST_ACK
         else:
             flags = 0
 
@@ -318,22 +336,22 @@ class STS(_OOSpec, _OOUSBComm):
             immediate_data = ""
             bytes_remaining = 20 + len(payload)
 
-        FMT = self.HEADER_FMT + payload_fmt + self.FOOTER_FMT
+        FMT = self._const.HEADER_FMT + payload_fmt + self._const.FOOTER_FMT
 
-        msg = struct.pack(FMT, self.HEADER_START_BYTES,
-                               self.HEADER_PROTOCOL_VERSION,
+        msg = struct.pack(FMT, self._const.HEADER_START_BYTES,
+                               self._const.HEADER_PROTOCOL_VERSION,
                                flags,
-                               self.NO_ERROR,
+                               self._const.NO_ERROR,
                                msgtype,
                                regarding,
-                               self.RESERVED,
-                               self.CHECKSUM_TYPE_NONE,
+                               self._const.RESERVED,
+                               self._const.CHECKSUM_TYPE_NONE,
                                immediate_length,
                                immediate_data,
                                bytes_remaining,
                                payload,
-                               self.NO_CHECKSUM,
-                               self.FOOTER)
+                               self._const.NO_CHECKSUM,
+                               self._const.FOOTER)
         return msg
 
     def _check_incoming_message_header(self, header):
@@ -342,34 +360,34 @@ class STS(_OOSpec, _OOUSBComm):
         """
         assert len(header) == 44, "header has wrong length! len(header): %d" % len(header)
 
-        data = struct.unpack(self.HEADER_FMT, header)
+        data = struct.unpack(self._const.HEADER_FMT, header)
 
-        assert data[0] == self.HEADER_START_BYTES, 'header start_bytes wrong: %d' % data[0]
-        assert data[1] == self.HEADER_PROTOCOL_VERSION, 'header protocol version wrong: %d' % data[1]
+        assert data[0] == self._const.HEADER_START_BYTES, 'header start_bytes wrong: %d' % data[0]
+        assert data[1] == self._const.HEADER_PROTOCOL_VERSION, 'header protocol version wrong: %d' % data[1]
 
         flags = data[2]
         if flags == 0:
             pass
-        if flags & self.FLAG_RESPONSE_TO_REQUEST:
+        if flags & self._const.FLAG_RESPONSE_TO_REQUEST:
             pass  # TODO: propagate?
-        if flags & self.FLAG_ACK:
+        if flags & self._const.FLAG_ACK:
             pass  # TODO: propagate?
-        if flags & self.FLAG_REQUEST_ACK:
+        if flags & self._const.FLAG_REQUEST_ACK:
             pass  # TODO: only the host should be able to set this?
-        if (flags & self.FLAG_NACK) or (flags & self.FLAG_HW_EXCEPTION):
+        if (flags & self._const.FLAG_NACK) or (flags & self._const.FLAG_HW_EXCEPTION):
             error = data[3]
             if error != 0:  # != SUCCESS
-                raise _OOError(self.ERROR_CODES[error])
+                raise _OOError(self._const.ERROR_CODES[error])
             else:
                 pass  # TODO: should we do simething here?
-        if flags & self.FLAG_PROTOCOL_DEPRECATED:
+        if flags & self._const.FLAG_PROTOCOL_DEPRECATED:
             raise _OOError("Protocol deprecated?!?")
 
         # msgtype = data[4]
         # regarding = data[5]
 
         checksumtype = data[7]  # TODO: implement checksums.
-        assert checksumtype in [self.CHECKSUM_TYPE_NONE, self.CHECKSUM_TYPE_MD5], 'the checksum type is unkown: %d' % checksumtype
+        assert checksumtype in [self._const.CHECKSUM_TYPE_NONE, self._const.CHECKSUM_TYPE_MD5], 'the checksum type is unkown: %d' % checksumtype
 
         # immediate_length = data[8]
         # immediate_data = data[9]
@@ -383,10 +401,10 @@ class STS(_OOSpec, _OOUSBComm):
         """
         assert len(footer) == 20, "footer has wrong length! len(footer): %d" % len(footer)
 
-        data = struct.unpack("<" + self.FOOTER_FMT, footer)
+        data = struct.unpack("<" + self._const.FOOTER_FMT, footer)
 
         checksum = data[0]
-        assert data[1] == self.FOOTER, "the device returned a wrong footer: %d" % data[1]
+        assert data[1] == self._const.FOOTER, "the device returned a wrong footer: %d" % data[1]
 
         return checksum
 
@@ -397,7 +415,7 @@ class STS(_OOSpec, _OOUSBComm):
         payload_length = len(msg) - 44 - 20  # - HeaderLength - FooterLength
         assert payload_length >= 0, "the received message was shorter than 64 bytes: %d" % payload_length
         payload_fmt = "%ds" % payload_length
-        FMT = self.HEADER_FMT + payload_fmt + self.FOOTER_FMT
+        FMT = self._const.HEADER_FMT + payload_fmt + self._const.FOOTER_FMT
 
         data = struct.unpack(FMT, msg)
 
@@ -415,13 +433,3 @@ class STS(_OOSpec, _OOUSBComm):
             return payload
         else:
             return ""
-
-
-    def _initialize(self):
-        """ Empty USB buffer """
-        # TODO: check if this is necessary?
-        while(True):
-            try:
-                self._usb_read()
-            except:
-                break
