@@ -5,10 +5,9 @@ from oceanoptics.defines import OceanOpticsVendorId as _OOVendorId
 from oceanoptics.defines import OceanOpticsError as _OOError
 
 import oceanoptics.spectrometers
-from oceanoptics.spectrometers.USB2000 import USB2000
-from oceanoptics.spectrometers.USB2000plus import USB2000plus
+from oceanoptics.spectrometers.XXX2000 import USB2000, HR2000
+from oceanoptics.spectrometers.XXX2000plus import USB2000plus, HR2000plus
 from oceanoptics.spectrometers.XXX4000 import USB4000, HR4000
-from oceanoptics.spectrometers.HR2000plus import HR2000plus
 from oceanoptics.spectrometers.MAYA import MAYA
 from oceanoptics.spectrometers.MAYA2000pro import MAYA2000pro
 from oceanoptics.spectrometers.APEX import APEX
@@ -18,10 +17,11 @@ from oceanoptics.spectrometers.STS import STS
 
 _models = {
 	"USB2000"	: USB2000,
+	"HR2000"	: HR2000,
 	"USB2000plus"	: USB2000plus,
+	"HR2000plus"	: HR2000plus,
 	"USB4000"	: USB4000,
 	"HR4000"	: HR4000,
-	"HR2000plus"	: HR2000plus,
 	"MAYA"	: MAYA,
 	"MAYA2000pro"	: MAYA2000pro,
 	"APEX"	: APEX,
