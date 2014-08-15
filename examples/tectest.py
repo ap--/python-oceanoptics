@@ -6,8 +6,8 @@ spec = oceanoptics.QE65000()
 spec.integration_time(0.1)
 sp = spec.spectrum()
 
-spec.set_TEC_temperature(-1)
-time.sleep(60)
+spec.set_TEC_temperature(0)
+time.sleep(30)
 
 setpoints = [-1,-3,-5,-8,-10,-12,-15,-18]
 temps = []
@@ -15,7 +15,7 @@ temps = []
 for s in setpoints:
     spec.set_TEC_temperature(s)
     print(s)
-    time.sleep(60)
+    time.sleep(30)
     temps.append(spec.get_TEC_temperature())
 
 print(setpoints)
