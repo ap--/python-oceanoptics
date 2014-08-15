@@ -16,6 +16,8 @@ Those should work, but are untested:
 * HR4000
 * QE65pro
 * HR2000+
+* USB2000
+* HR2000
 * apex
 * maya
 * maya2000pro
@@ -77,9 +79,8 @@ or run some the example program _liveview.py_
 If you own any of the spectrometers listed below, feel free to contribute.
 
 
-#### Not supported ####
+#### Not yet supported ####
 
-* HR2000
 * Jaz
 * NIR 
 * NIRQUEST
