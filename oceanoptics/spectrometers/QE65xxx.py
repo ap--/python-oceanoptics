@@ -38,7 +38,7 @@ class _QE65xxx(_OOBase, _OOTEC):
 # tested
 #--------
 
-class QE65000(_QE56xxx):
+class QE65000(_QE65xxx):
     def __init__(self):
         super(QE65000, self).__init__('QE65000')
         self.initialize_TEC()
