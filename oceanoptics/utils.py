@@ -36,10 +36,10 @@ def get_a_random_spectrometer():
         from spectrometers.QE65xxx import QE65000
         return QE65000()
     elif mod == 'USB4000':
-        from spectrometers.USB4000 import USB4000
+        from spectrometers.XXX4000 import USB4000
         return USB4000()
     elif mod == 'HR4000':
-        from spectrometers.HR4000 import HR4000
+        from spectrometers.XXX4000 import HR4000
         return HR4000()
     return _OOBase(mod)
 
