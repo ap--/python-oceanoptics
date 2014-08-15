@@ -1,5 +1,5 @@
 
-import oceanoptics.spectrometers
+__version__ = '0.2.8'
 
 from oceanoptics.spectrometers.USB2000 import USB2000
 from oceanoptics.spectrometers.USB2000plus import USB2000plus
