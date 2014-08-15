@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 #
-# TODO: inherit from OceanOpticsSpectrometer and implement
-#       high level functions!s
+# STS spectrometer
+# ================
+#
+# To implement further functionality you basically just need to look at
+# the two communication layer functions:
+#  self._send_command and self._query_data
+#
+# based on those you can implement other commands.
+# call them with the right message constant in self._const.MSG_...
+# and the payload data packed in a string.
 #
 """ File:           STS.py
-    Author:        Jose A. Jimenez-Berni
-    Last change:    2013/05/20
+    Author:         Jose A. Jimenez-Berni, Andreas Poehlmann
+    Last change:    2014/08/15
 
     Python Interface for STS OceanOptics Spectometers.
     Current device classes:
