@@ -3,8 +3,33 @@ from oceanoptics.defines import OceanOpticsSupportedModels as _OOSupMod
 from oceanoptics.defines import OceanOpticsModelConfig as _OOModConf
 from oceanoptics.defines import OceanOpticsVendorId as _OOVendorId
 from oceanoptics.defines import OceanOpticsError as _OOError
-from oceanoptics.base import OceanOpticsBase as _OOBase
 
+import oceanoptics.spectrometers
+from oceanoptics.spectrometers.USB2000 import USB2000
+from oceanoptics.spectrometers.USB2000plus import USB2000plus
+from oceanoptics.spectrometers.XXX4000 import USB4000, HR4000
+from oceanoptics.spectrometers.HR2000plus import HR2000plus
+from oceanoptics.spectrometers.MAYA import MAYA
+from oceanoptics.spectrometers.MAYA2000pro import MAYA2000pro
+from oceanoptics.spectrometers.APEX import APEX
+from oceanoptics.spectrometers.QE65xxx import QE65000, QE65pro
+from oceanoptics.spectrometers.TORUS import TORUS
+from oceanoptics.spectrometers.STS import STS
+
+_models = {
+	"USB2000"	: USB2000,
+	"USB2000plus"	: USB2000plus,
+	"USB4000"	: USB4000,
+	"HR4000"	: HR4000,
+	"HR2000plus"	: HR2000plus,
+	"MAYA"	: MAYA,
+	"MAYA2000pro"	: MAYA2000pro,
+	"APEX"	: APEX,
+	"QE65000"	: QE65000,
+	"QE65pro"	: QE65pro,
+	"TORUS"	: TORUS,
+	"STS"	: STS,
+        }
 
 def get_a_random_spectrometer():
     ProductId = {}
@@ -29,17 +54,4 @@ def get_a_random_spectrometer():
     print '>'
     print '> returning first %s as OceanOpticsSpectrometer' % mod
 
-    if mod == 'STS':
-        from spectrometers.STS import STS
-        return STS()
-    elif mod == 'QE65000':
-        from spectrometers.QE65xxx import QE65000
-        return QE65000()
-    elif mod == 'USB4000':
-        from spectrometers.XXX4000 import USB4000
-        return USB4000()
-    elif mod == 'HR4000':
-        from spectrometers.XXX4000 import HR4000
-        return HR4000()
-    return _OOBase(mod)
-
+    return _models[mod]
