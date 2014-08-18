@@ -1,9 +1,21 @@
 **This software is not associated with Ocean Optics. Use it at your own risk.**
 
+**Info:** There seems to be some development regarding thinner abstraction layers for
+the spectrometers. If the [SeaBreeze](http://oceanoptics.com/product/seabreeze/)
+library (a thin C/C++ abstraction layer) would be available, we could write
+a ctypes or cython interface for it and support everything needed.
+
 ## Ocean Optics python module ##
 
 This python module provides access to some basic functionality of some [Ocean
-Optics](http://www.oceanoptics.com/) spectrometers. 
+Optics](http://www.oceanoptics.com/) spectrometers. The lack of availability of
+a python interface for their spectrometers lead to the development of this
+module. The specifications of the USB communication layer used in their
+spectrometers are freely available in the OEM manuals on their website.
+
+This software is a community effort to get platform independent python support
+for these spectrometers. If you are not 100% sure what you are doing, stick with
+the - also platform independent - SpectraSuite and OceanView software.
 
 **Currently working with:**
 
@@ -12,7 +24,8 @@ Optics](http://www.oceanoptics.com/) spectrometers.
 * QE65000
 * STS (Note: The rewritten class supports protocol version _0x1100_)
 
-Those should work, but are untested:
+**Might work, untested:**
+
 * HR4000
 * QE65pro
 * HR2000+
@@ -23,7 +36,14 @@ Those should work, but are untested:
 * maya2000pro
 * Torus
 
+**Not yet supported:**
+
+* Jaz
+* NIR 
+* NIRQUEST
+
 Contributions are welcome.
+
 
 ## Installing ##
 
@@ -71,7 +91,7 @@ spec = oceanoptics.get_a_random_spectrometer()
 print spec.spectrum()
 ```
 
-or run some the example program _liveview.py_
+or run the example program _liveview.py_
 
 
 ## Contributing ##
@@ -79,8 +99,6 @@ or run some the example program _liveview.py_
 If you own any of the spectrometers listed below, feel free to contribute.
 
 
-#### Not yet supported ####
+## License ##
 
-* Jaz
-* NIR 
-* NIRQUEST
+Python files in this repository are released under the [MIT license](LICENSE.md).
