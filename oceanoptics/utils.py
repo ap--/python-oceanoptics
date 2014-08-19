@@ -54,4 +54,5 @@ def get_a_random_spectrometer():
     print '>'
     print '> returning first %s as OceanOpticsSpectrometer' % mod
 
-    return _models[mod]
+    spec_class = _models[mod]
+    return spec_class()
