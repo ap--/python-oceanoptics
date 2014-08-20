@@ -19,6 +19,7 @@ _models = {
 	"USB2000"	: USB2000,
 	"HR2000"	: HR2000,
 	"USB2000plus"	: USB2000plus,
+	"USB2000+"	: USB2000plus,
 	"HR2000plus"	: HR2000plus,
 	"USB4000"	: USB4000,
 	"HR4000"	: HR4000,
