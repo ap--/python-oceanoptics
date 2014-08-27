@@ -132,7 +132,7 @@ class DynamicPlotter(Gtk.Window):
         number = int(number)
         
         self.oversample = number
-        self.time_entry.set_text(str(number))        
+        self.oversample_entry.set_text(str(number))        
         return False
 
     def connect_spectrometer(self):
