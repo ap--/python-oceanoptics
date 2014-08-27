@@ -118,6 +118,12 @@ class DynamicPlotter(Gtk.Window):
         number = min(10. ,number)        
         self.sample_interval_sec = number
         self.time_entry.set_text(str(number))        
+
+        try:
+            self.spectrometer.integration_time(time_sec=self.sample_interval_sec)        
+        except (USBError, oceanoptics.defines.OceanOpticsError), e:
+            print e
+
         return False
 
     def oversample_entry_focus_out(self, entry, event):
@@ -222,8 +228,11 @@ class DynamicPlotter(Gtk.Window):
         self.empty_buffer()
         self.get_dark = True
         self.sp_dark = np.zeros(self.wl.shape)
+	print "Get dark"
 
     def update_plot(self):
+        if self.get_dark: return
+
         # Redraw the spectrum graph
         sp = self.average_spectra[self.wl_300nm:self.wl_830nm]
         scale = 1./max(1e-5,np.max(sp[self.wl_300nm:self.wl_830nm]))
@@ -231,6 +240,8 @@ class DynamicPlotter(Gtk.Window):
         self.canvas.draw()
 
     def update_colour(self):
+        if self.get_dark: return
+
         # Calculate the colour in XYZ space
         dw = self.deltawl[self.wl_300nm:self.wl_830nm]
         sp = self.average_spectra[self.wl_300nm:self.wl_830nm]
@@ -273,7 +284,6 @@ class DynamicPlotter(Gtk.Window):
         
         #Try to read the next sample
         try:
-            self.spectrometer.integration_time(time_sec=self.sample_interval_sec)        
             sample  = np.array(self.spectrometer.intensities(raw=self.raw))
             sample -= self.sp_dark            
                       
@@ -319,13 +329,14 @@ class DynamicPlotter(Gtk.Window):
             self.spectra_ready = False
             # Spectra has been received so now process it.
             if self.get_dark:
-                if self.n_sample==0:
+                if np.all(self.buffer_mask):
                     self.get_dark = False
                     self.sp_dark = self.max_spectra
                     np.savetxt("dark_point.txt", zip(self.wl,self.sp_dark))
                 else:
                     self.text.set_text('Setting dark-point: %d/%d\n\n' % ((self.n_sample+1), self.oversample))
-                
+                    self.statusbar.push(self.status_context,'Setting dark-point: %d/%d\n\n' % ((self.n_sample+1), self.oversample))
+
             elif self.get_white:
                 if self.n_sample==0:
                     self.get_white = False
