@@ -38,6 +38,16 @@ class _XXX4000(_OOBase):
         spectrum = struct.unpack('<'+'H'*self._pixels, ret)
         spectrum = map(self._packet_func, spectrum)
         return spectrum
+        
+    def _read_pcb_temperature(self):
+        """ just for compatibility with parent class """
+        """ 0x6C read pcb temperature """
+        self._usb_send(struct.pack('<B', 0x6C))
+        ret = self._usb_read()
+        if (ret[0] != 0x08) | (ret[0] != 0x08):
+            raise _OOError('read_temperatures: Wrong answer')
+        ret = struct.unpack('<h', ret[1:3])[0] * 0.003906
+        return ret
 
 #--------
 # tested
