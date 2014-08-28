@@ -1,4 +1,21 @@
 #!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+""" File:		colour.py
+    Author:		Ian Ross Williams
+    Last change		2014/08/28
+    
+    Example usage of the oceanoptics python library to measure the visible colour of light.
+    
+    The user interface uses GTK3+ idle threads as this was necessary for the live display to remain
+    responsive when running on slow computers like the Raspberry Pi.  
+    
+    Error checking of the USB connection state allows the spectrometer to be unplugged and replugged.
+    
+    The colour values reported are based on the CIE1931 colour standard (L*,a*,b* colour space).
+    The reference light-source is set by pressing the "Set White-point" button.
+    
+    Requires the file CIE1931and1964.txt to be in the working directory.
+"""
 import oceanoptics
 import os
 import re
