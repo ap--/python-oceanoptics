@@ -251,7 +251,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
 
     def _query_information(self, address, raw=False):
         """ send command 0x05 """
-        ret = self._usb_query(struct.pack('<BB', 0x05, int(address)))
+        ret = self._usb_query(struct.pack('<BB', 0x05, int(address)), epi_size=17)
         if bool(raw): return ret
         if ret[0] != 0x05 or ret[1] != int(address)%0xFF:
             raise _OOError('query_information: Wrong answer')
