@@ -52,7 +52,7 @@ class USB2000(_XXX2000):
         #      but we return 0x00 to use the abstraction in OOBase
 
         ret = self._usb_query(struct.pack('<B', 0xFE))
-        data = struct.unpack('<HHBBBBBBBBBBBB', ret[:])
+        data = list(struct.unpack('<HHBBBBBBBBBBBB', ret[:]))
         # XXX: This one value is byteswapped...
         data[1] = struct.unpack('>H', struct.pack('<H', data[1]))
         ret = { 'pixels' : data[0],
