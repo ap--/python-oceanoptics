@@ -54,7 +54,7 @@ class USB2000(_XXX2000):
         ret = self._usb_query(struct.pack('<B', 0xFE))
         data = list(struct.unpack('<HHBBBBBBBBBBBB', ret[:]))
         # XXX: This one value is byteswapped...
-        data[1] = struct.unpack('>H', struct.pack('<H', data[1]))
+        data[1] = struct.unpack('>H', struct.pack('<H', data[1]))[0]
         ret = { 'pixels' : data[0],
                 'integration_time' : data[1] * 1000,  # ms to us
                 'lamp_enable' : data[2],
