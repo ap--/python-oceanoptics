@@ -40,6 +40,7 @@ class USB2000(_XXX2000):
         # XXX: The USB2000 requires the time set in Milliseconds!
         #      This overides the provided function of OOBase
         time_ms = int(time_us/1000)
+        self._integration_time = time_ms * 1e3
         self._usb_send(struct.pack('<BI', 0x02, time_ms))
 
     def _query_status(self):
