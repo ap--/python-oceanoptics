@@ -19,7 +19,8 @@ class mpl:
 
 class DynamicPlotter(Gtk.Window):
 
-    def __init__(self, sample_interval_sec=0.1, smoothing=1, oversampling=1, raw=False, size=(600,350), outfile=None):
+    def __init__(self, sample_interval_sec=0.1, smoothing=1, oversampling=1, raw=False, size=(600,350), outfile=None,
+                 lower=None, upper=None):
         # Gtk stuff
         Gtk.Window.__init__(self, title='Ocean Optics Spectrometer')
         self.connect("destroy", lambda x : Gtk.main_quit())
@@ -37,6 +38,7 @@ class DynamicPlotter(Gtk.Window):
         # MPL stuff
         self.figure = mpl.Figure()
         self.ax = self.figure.add_subplot(1, 1, 1)
+        self.ax.set_xlim(left=lower, right=upper, auto=True)
         self.ax.grid(True)
         self.canvas = mpl.FigureCanvas(self.figure)
         self.line, = self.ax.plot(self.wl, self.sp[:,0])
@@ -106,12 +108,17 @@ if __name__ == '__main__':
                         help='Number of spectrum points to average over')
     parser.add_argument('-O', '--oversample', type=int, default=1, metavar='N',
                         help='Average together successive spectra')
+    parser.add_argument('-l', '--lower', type=float, default=None, metavar='WAVELENGTH',
+                        help='Lower bound of plot')
+    parser.add_argument('-u', '--upper', type=float, default=None, metavar='WAVELENGTH',
+                        help='Upper bound of plot')
     parser.add_argument('--out', type=argparse.FileType('w'), default=None,
                         help='save to text-file, please implement your own way for saving... this is really just an example (and completely inefficient!!!)')
 
     args = parser.parse_args()
 
     m = DynamicPlotter(sample_interval_sec=args.interval, raw=args.raw, smoothing=args.smooth,
-                       oversampling=args.oversample, outfile=args.out)
+                       oversampling=args.oversample, outfile=args.out,
+                       lower=args.lower, upper=args.upper)
     m.run()
 
