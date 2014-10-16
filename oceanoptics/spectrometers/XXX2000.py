@@ -63,7 +63,11 @@ class USB2000(_XXX2000):
                 'timer_swap' : data[5],
                 'spectral_data_density' : data[6],
                 'packets_in_endpoint' : 64,
-                'usb_speed' : 0x00 }
+                'usb_speed' : 0x80 # This is a workaround to leave
+                                   # OOBase unchanged. This way
+                                   # self._EPspec gets set to 0x82 
+                                   # TODO: change abstraction layer
+              }
         return ret
 
 
