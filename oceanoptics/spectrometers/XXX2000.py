@@ -52,9 +52,8 @@ class USB2000(_XXX2000):
         #      but we return 0x00 to use the abstraction in OOBase
 
         ret = self._usb_query(struct.pack('<B', 0xFE))
-        data = list(struct.unpack('<HHBBBBBBBBBBBB', ret[:]))
-        # XXX: This one value is byteswapped...
-        data[1] = struct.unpack('>H', struct.pack('<H', data[1]))[0]
+        # XXX: Error in the manual! Byteorder seems to be bigendian
+        data = list(struct.unpack('>HHBBBBBBBBBBBB', ret[:]))
         ret = { 'pixels' : data[0],
                 'integration_time' : data[1] * 1000,  # ms to us
                 'lamp_enable' : data[2],
