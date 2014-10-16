@@ -228,7 +228,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
         return status
 
     def _init_robust_spectrum(self):
-        self.integration_time(0.001)
+        self.integration_time(0.005)
         for i in range(10):
             try:
                 self._request_spectrum()
