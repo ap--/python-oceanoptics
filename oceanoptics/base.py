@@ -87,7 +87,11 @@ class OceanOpticsUSBComm(object):
             epi = self._EPin0
         if epi_size is None:
             epi_size = self._EPin0_size
-        return self._dev.read(epi, epi_size)
+        out = self._dev.read(epi, epi_size)
+        if isinstance(out, (basestring, unicode)):
+            return out
+        else:
+            return out.tostring()
 
     def _usb_query(self, data, epo=None, epi=None, epi_size=None):
         """ helper """
