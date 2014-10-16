@@ -17,8 +17,8 @@ class _XXX2000(_OOBase):
         ret = sum( ret[1:], ret[0] )
 
         # XXX: This sorts the the packets in the right order
-        ret = "".join(ret[j*self._packet_size + i] + ret[(j+1)*self._packet_size + i]
-                      for j in range(0, self._packet_N, 2) for i in range(self._packet_size))
+        ret = "".join(map(chr,[ret[j*self._packet_size + i] + ret[(j+1)*self._packet_size + i]
+                      for j in range(0, self._packet_N, 2) for i in range(self._packet_size)]))
 
         sync = self._usb_read(epi=self._EPspec, epi_size=1)
         if sync[0] != 0x69:
