@@ -23,13 +23,13 @@ the - also platform independent - SpectraSuite and OceanView software.
 * USB4000
 * QE65000
 * STS (Note: The rewritten class supports protocol version _0x1100_)
+* USB2000
 
 **Might work, untested:**
 
 * HR4000
 * QE65pro
 * HR2000+
-* USB2000
 * HR2000
 * apex
 * maya

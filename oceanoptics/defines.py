@@ -61,7 +61,7 @@ OceanOpticsModelConfig = {
     'HR2000': {'ProductId': [0x100A, 0x1009],
                'EPout': 0x02,
                'EPin0': 0x87, 'EPin0_size': 64,
-               'EPin1': 0x07, 'EPin1_size': 64, },
+               'EPin1': 0x82, 'EPin1_size': 64, },
     # The HR4000 returns spectra split over two end points
     #  EPin6 for first 1024 pixels then EPin2 for the rest
     'HR4000': {'ProductId': [0x1012, 0x1011],
@@ -123,7 +123,8 @@ OceanOpticsSpectrumConfig = {
                         0x00 : [120,  64, lambda x : x      ] },
     'USB2000'       : { 0x00 : [ 64,  64, lambda x : x      ],
                         0x80 : [ 64,  64, lambda x : x      ] },
-    'HR2000'        : { 0x00 : [ 64,  64, lambda x : x      ] },
+    'HR2000'        : { 0x00 : [ 64,  64, lambda x : x      ],
+                        0x80 : [ 64,  64, lambda x : x      ] },
     }
 
 
