@@ -17,8 +17,12 @@ class _XXX2000(_OOBase):
         ret = sum( ret[1:], ret[0] )
 
         # XXX: This sorts the the packets in the right order
-        ret = "".join(ret[j*self._packet_size + i] + ret[(j+1)*self._packet_size + i]
-                      for j in range(self._packet_N) for i in range(self._packet_size))
+        sorted_ret = []
+        for j in range(0, self._packet_N, 2):
+            for i in range(self._packet_size):
+                sorted_ret.append(chr(ret[j*self._packet_size + i]))
+                sorted_ret.append(chr(ret[(j+1)*self._packet_size + i]))
+        ret = "".join(sorted_ret)
 
         sync = self._usb_read(epi=self._EPspec, epi_size=1)
         if sync[0] != 0x69:
@@ -40,6 +44,7 @@ class USB2000(_XXX2000):
         # XXX: The USB2000 requires the time set in Milliseconds!
         #      This overides the provided function of OOBase
         time_ms = int(time_us/1000)
+        self._integration_time = time_ms * 1e3
         self._usb_send(struct.pack('<BI', 0x02, time_ms))
 
     def _query_status(self):
@@ -51,16 +56,21 @@ class USB2000(_XXX2000):
         #      but we return 0x00 to use the abstraction in OOBase
 
         ret = self._usb_query(struct.pack('<B', 0xFE))
-        data = struct.unpack('<HLBBBBBBBBBB', ret[:])
+        # XXX: Error in the manual! Byteorder seems to be bigendian
+        data = list(struct.unpack('>HHBBBBBBBBBBBB', ret[:]))
         ret = { 'pixels' : data[0],
                 'integration_time' : data[1] * 1000,  # ms to us
                 'lamp_enable' : data[2],
                 'trigger_mode' : data[3],
                 'acquisition_status' : data[4],
-                'packets_in_spectrum' : data[5],
-                'power_down' : data[6],
-                'packets_in_endpoint' : data[7],
-                'usb_speed' : 0x00 }
+                'timer_swap' : data[5],
+                'spectral_data_density' : data[6],
+                'packets_in_endpoint' : 64,
+                'usb_speed' : 0x80 # This is a workaround to leave
+                                   # OOBase unchanged. This way
+                                   # self._EPspec gets set to 0x82 
+                                   # TODO: change abstraction layer
+              }
         return ret
 
 
