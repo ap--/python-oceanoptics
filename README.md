@@ -1,9 +1,7 @@
 **This software is not associated with Ocean Optics. Use it at your own risk.**
 
-**Info:** There seems to be some development regarding thinner abstraction layers for
-the spectrometers. If the [SeaBreeze](http://oceanoptics.com/product/seabreeze/)
-library (a thin C/C++ abstraction layer) would be available, we could write
-a ctypes or cython interface for it and support everything needed.
+**Info:** If this is not working for you, checkout [python-seabreeze](https://github.com/ap--/python-seabreeze).
+
 
 ## Ocean Optics python module ##
 
