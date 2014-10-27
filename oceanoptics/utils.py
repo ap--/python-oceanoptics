@@ -5,7 +5,7 @@ from oceanoptics.defines import OceanOpticsVendorId as _OOVendorId
 from oceanoptics.defines import OceanOpticsError as _OOError
 
 import oceanoptics.spectrometers
-from oceanoptics.spectrometers.XXX2000 import USB2000, HR2000
+from oceanoptics.spectrometers.XXX2000 import USB2000, HR2000, USB650
 from oceanoptics.spectrometers.XXX2000plus import USB2000plus, HR2000plus
 from oceanoptics.spectrometers.XXX4000 import USB4000, HR4000
 from oceanoptics.spectrometers.MAYA import MAYA
