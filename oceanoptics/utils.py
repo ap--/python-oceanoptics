@@ -17,6 +17,7 @@ from oceanoptics.spectrometers.STS import STS
 
 _models = {
 	"USB2000"	: USB2000,
+	"USB650"	: USB650,
 	"HR2000"	: HR2000,
 	"USB2000+"	: USB2000plus,
 	"HR2000+"	: HR2000plus,
