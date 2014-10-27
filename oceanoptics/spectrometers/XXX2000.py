@@ -113,3 +113,44 @@ class HR2000(_XXX2000):
                                    # TODO: change abstraction layer
               }
         return ret
+        
+        
+        
+class USB650(_XXX2000):
+
+    def __init__(self):
+        super(USB650, self).__init__('USB650')
+
+    def _set_integration_time(self, time_us):
+        """ send command 0x02 """
+        # XXX: The USB2000 requires the time set in Milliseconds!
+        #      This overides the provided function of OOBase
+        time_ms = int(time_us/1000)
+        self._integration_time = time_ms * 1e3
+        self._usb_send(struct.pack('<BI', 0x02, time_ms))
+
+    def _query_status(self):
+        """ 0xFE query status """
+        # XXX: The USB2000 also returns the time in Milliseconds!
+        #      This overides the provided function of OOBase
+        #      and pretends to return us
+        # XXX: query status does not actually return the usb_speed,
+        #      but we return 0x00 to use the abstraction in OOBase
+
+        ret = self._usb_query(struct.pack('<B', 0xFE))
+        # XXX: Error in the manual! Byteorder seems to be bigendian
+        data = list(struct.unpack('>HHBBBBBBBBBBBB', ret[:]))
+        ret = { 'pixels' : data[0],
+                'integration_time' : data[1] * 1000,  # ms to us
+                'lamp_enable' : data[2],
+                'trigger_mode' : data[3],
+                'acquisition_status' : data[4],
+                'timer_swap' : data[5],
+                'spectral_data_density' : data[6],
+                'packets_in_endpoint' : 64,
+                'usb_speed' : 0x80 # This is a workaround to leave
+                                   # OOBase unchanged. This way
+                                   # self._EPspec gets set to 0x82 
+                                   # TODO: change abstraction layer
+              }
+        return ret
