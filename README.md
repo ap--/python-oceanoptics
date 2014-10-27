@@ -22,6 +22,7 @@ the - also platform independent - SpectraSuite and OceanView software.
 * QE65000
 * STS (Note: The rewritten class supports protocol version _0x1100_)
 * USB2000
+* USB650
 
 **Might work, untested:**
 
