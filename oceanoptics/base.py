@@ -4,6 +4,7 @@ import numpy as np
 import struct
 import time
 import usb.core
+import usb.util
 import warnings
 from oceanoptics.defines import OceanOpticsError as _OOError
 from oceanoptics.defines import OceanOpticsModelConfig as _OOModelConfig
@@ -93,6 +94,16 @@ class OceanOpticsUSBComm(object):
         """ helper """
         self._usb_send(data, epo)
         return self._usb_read(epi, epi_size)
+
+    def dispose(self):
+        usb.util.dispose_resources(self._dev)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, exception_traceback):
+        # TODO: handle exceptions
+        self.dispose()
 
 
 class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
