@@ -82,7 +82,7 @@ OceanOpticsModelConfig = {
              'EPout': 0x01,
              'EPin0': 0x81, 'EPin0_size': 64,
              'EPin1': 0x82, 'EPin1_size': 512, },
-    'Maya': {'ProductId': [0x102A],
+    'Maya': {'ProductId': [0x102C],
              'EPout': 0x01,
              'EPin0': 0x81, 'EPin0_size': 64,
              'EPin1': 0x82, 'EPin1_size': 512, },
