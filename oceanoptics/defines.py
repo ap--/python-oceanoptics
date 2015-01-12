@@ -38,7 +38,7 @@ OceanOpticsModelConfig = {
                 'EPout': 0x01,
                 'EPin0': 0x81, 'EPin0_size': 64,
                 'EPin1': 0x82, 'EPin1_size': 512, },
-    'QE65pro': {'ProductId': [0x1018],
+    'QE65pro': {'ProductId': [0x4004],
                 'EPout': 0x01,
                 'EPin0': 0x81, 'EPin0_size': 64,
                 'EPin1': 0x82, 'EPin1_size': 512, },
