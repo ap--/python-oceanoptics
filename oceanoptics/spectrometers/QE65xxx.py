@@ -41,6 +41,10 @@ class _QE65xxx(_OOBase, _OOTEC):
 class QE65000(_QE65xxx):
     def __init__(self):
         super(QE65000, self).__init__('QE65000')
+        # The QE65000 needs a -10 offset for calculating the wavelengths
+        # due to some legacy issues...
+        self._wl = sum( self._wl_factors[i] *
+            np.arange(-10, self._pixels - 10, dtype=np.float64)**i for i in range(4) )
         self.initialize_TEC()
 
 
