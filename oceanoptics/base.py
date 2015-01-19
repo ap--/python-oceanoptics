@@ -51,6 +51,9 @@ class OceanOpticsUSBComm(object):
         if model not in _OOModelConfig.keys():
             raise _OOError('Unkown OceanOptics spectrometer model: %s' % model)
 
+        # Add model
+        self.model = model
+
         vendorId, productId = _OOVendorId, _OOModelConfig[model]['ProductId']
         self._EPout = _OOModelConfig[model]['EPout']
         self._EPin0 = _OOModelConfig[model]['EPin0']
