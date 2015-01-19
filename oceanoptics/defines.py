@@ -150,6 +150,22 @@ OceanOpticsValidPixels = {
     'HR2000'        : slice(26, 2048),
     }
 
+OceanOpticsMinMaxIntegrationTime = {
+    'Apex'          : (0.015, 1600.),
+    'HR2000+'       : (0.001, 655.350),
+    'HR4000'        : (0.00001, 655.350),
+    'Maya'          : (0.015, 1600.),
+    'Maya2000pro'   : (0.0072, 65.),
+    'QE65000'       : (0.008, 1600.),
+    'QE65pro'       : (0.010, 1600.),
+    'Torus'         : (0.0, float('inf')),  # TODO: don't know...
+    'USB2000+'      : (0.001, 655.350),
+    'USB4000'       : (0.00001, 655.350),
+    'USB2000'       : (0.003, 655.350),
+    'USB650'        : (0.003, 655.350),  # XXX: seems to be a rebranded USB2000
+    'HR2000'        : (0.003, 655.350),
+    'STS'           : (0.00001, 85.)
+    }
 
 OceanOpticsSupportedModels = OceanOpticsSpectrumConfig.keys() + ['STS']
 

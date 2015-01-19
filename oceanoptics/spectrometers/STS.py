@@ -23,6 +23,7 @@
 #----------------------------------------------------------
 import struct
 from oceanoptics.defines import OceanOpticsError as _OOError
+from oceanoptics.defines import OceanOpticsMinMaxIntegrationTime as _OOMinMaxIT
 from oceanoptics.base import OceanOpticsSpectrometer as _OOSpec
 from oceanoptics.base import OceanOpticsUSBComm as _OOUSBComm
 import numpy as np
@@ -192,6 +193,7 @@ class STS(_OOSpec, _OOUSBComm):
         # set the integration time
         self._integration_time = self._set_integration_time(integration_time)
 
+        self._min_integration_time, self._max_integration_time = _OOMinMaxIT[self.model]
 
     #------------------------------------
     # Implement High level functionality
@@ -202,7 +204,11 @@ class STS(_OOSpec, _OOUSBComm):
 
         """
         if time_sec is not None:
-            self._integration_time = self._set_integration_time(time_sec)
+            if self._min_integration_time <= time_sec < self._max_integration_time:
+                self._integration_time = self._set_integration_time(time_sec)
+            else:
+                raise _OOError("Integration time for %s required to be %f <= t < %f" %
+                               (self.model, self._min_integration_time, self._max_integration_time))
         return self._integration_time
 
     def wavelengths(self, *args, **kwargs):
