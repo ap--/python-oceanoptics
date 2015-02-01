@@ -282,7 +282,7 @@ class OceanOpticsBase(OceanOpticsSpectrometer, OceanOpticsUSBComm):
 
     def _request_spectrum(self):
         self._usb_send(struct.pack('<B', 0x09))
-        time.sleep(max(self._integration_time - self._USBTIMEOUT, 0))
+        time.sleep(max(self._integration_time - 0.1*self._USBTIMEOUT, 0))
         ret = [ self._usb_read(epi=self._EPspec, epi_size=self._packet_size)
                             for _ in range(self._packet_N) ]
         ret = sum( ret[1:], ret[0] )
