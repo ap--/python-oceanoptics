@@ -1,6 +1,8 @@
 **This software is not associated with Ocean Optics. Use it at your own risk.**
 
-**Info:** If this is not working for you, checkout [python-seabreeze](https://github.com/ap--/python-seabreeze).
+# INFO
+
+The complete python-oceanoptics **PyUSB** interface is now merged into the **pyseabreeze** backend from [python-seabreeze](https://github.com/ap--/python-seabreeze). As soon as all spectrometers are tested with python-seabreeze, the python-oceanoptics module will be obsolete. So if you own any of the untested spectrometers, please test it with python-seabreeze and let me know if it works. Thanks.
 
 
 ## Ocean Optics python module ##
